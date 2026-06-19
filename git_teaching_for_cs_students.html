@@ -920,10 +920,346 @@ git status</code></pre>
       <h3>10.6 最簡單的心智模型</h3>
 
       <div class="diagram">push：本機 → server
-pull：server → 本機，並嘗試合併
-fetch：server → 本機的遠端追蹤資訊，不直接改工作檔案</div>
+fetch：server → 本機的遠端追蹤資訊，不直接改工作檔案
+pull：fetch + merge，會嘗試把 server 更新合併到本機
+reset --hard：不要合併，直接讓本機變成指定版本</div>
 
       <p>所以如果 server 端有修改，本機通常應該先 <code>fetch</code> 或 <code>pull</code>。新手最常用的是 <code>git pull origin main</code>，想安全觀察遠端變化時，先用 <code>git fetch origin</code>。</p>
+
+      <h3>10.7 如果本機改了，但想放棄本機修改，以 server 版本為準</h3>
+
+      <p>如果你的目標是：</p>
+
+      <blockquote>
+        <p>本機改過的東西不要了，我只想讓本機變成 GitHub / Gitea server 上的最新版本。</p>
+      </blockquote>
+
+      <p>那不能只用：</p>
+
+      <pre><code>git fetch origin
+git pull origin main</code></pre>
+
+      <p>因為 <code>git pull</code> 的意思是「抓 server 最新內容，並嘗試合併到本機」。它不是「放棄本機修改」。如果本機和 server 改到同一個檔案，<code>pull</code> 可能會產生衝突；如果本機有尚未 commit 的修改，<code>pull</code> 也可能被 Git 擋下來。</p>
+
+      <div class="callout">
+        <strong><code>pull</code> 會判斷什麼？</strong>
+        <p><code>git pull origin main</code> 會判斷的是：「server 的更新能不能安全合併進本機？」它不會幫你判斷「本機修改要不要丟掉」。如果能合併，它會合併；如果不能安全合併，它可能會要求你先 commit、stash，或手動解 conflict。</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>你想達成的目的</th>
+            <th>Git 會怎麼處理</th>
+            <th>應用指令</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>想保留本機修改，並把 server 更新合進來</td>
+            <td>Git 會嘗試判斷能不能自動合併；不能合併時會產生 conflict 或要求你先處理本機修改。</td>
+            <td><code>git pull origin main</code></td>
+          </tr>
+          <tr>
+            <td>本機修改不要了，只要 server 版本</td>
+            <td>不要讓 Git merge，而是直接把本機目前 branch 重設成 <code>origin/main</code>。</td>
+            <td><code>git fetch origin</code><br><code>git reset --hard origin/main</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+
+      <div class="callout danger">
+        <strong>放棄本機修改要用 reset，不是 pull</strong>
+        <p><code>git reset --hard origin/main</code> 會把本機目前 branch 強制重設成遠端 <code>origin/main</code> 的狀態。這會丟掉本機已追蹤檔案的未保存修改，請確認本機內容真的不要了再執行。</p>
+      </div>
+
+      <h4>情境 A：放棄本機已追蹤檔案的修改</h4>
+
+      <pre><code>git status
+git fetch origin
+git reset --hard origin/main</code></pre>
+
+      <p>這三行的意思是：</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>指令</th>
+            <th>作用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>git status</code></td>
+            <td>先確認本機目前有哪些修改。</td>
+          </tr>
+          <tr>
+            <td><code>git fetch origin</code></td>
+            <td>抓回 server 最新狀態，更新 <code>origin/main</code>。</td>
+          </tr>
+          <tr>
+            <td><code>git reset --hard origin/main</code></td>
+            <td>強制讓本機目前 branch 變成 server 的 <code>origin/main</code> 狀態。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>情境 B：連本機新增、但還沒被 Git 追蹤的檔案也要刪掉</h4>
+
+      <p><code>git reset --hard</code> 只會處理 Git 已追蹤的檔案。如果你本機有新檔案還沒 <code>git add</code>，它可能還會留著。若確定這些未追蹤檔案也不要了，再執行：</p>
+
+      <pre><code>git clean -fd</code></pre>
+
+      <p>完整流程是：</p>
+
+      <pre><code>git status
+git fetch origin
+git reset --hard origin/main
+git clean -fd</code></pre>
+
+      <div class="callout danger">
+        <strong>小心 <code>git clean -fd</code></strong>
+        <p><code>git clean -fd</code> 會刪除本機未追蹤檔案，例如你還沒 <code>git add</code> 的新檔案。新手不要隨便執行，最好先備份或先用 <code>git clean -fdn</code> 預覽會刪什麼。</p>
+      </div>
+
+      <h4>可以先預覽 clean 會刪什麼</h4>
+
+      <pre><code>git clean -fdn</code></pre>
+
+      <p><code>-n</code> 代表 dry run，只列出會被刪除的檔案，不會真的刪。</p>
+
+      <h4>三種情境怎麼選？</h4>
+
+      <table>
+        <thead>
+          <tr>
+            <th>你的目的</th>
+            <th>建議指令</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>想看看 server 有沒有新版本，但不改本機檔案</td>
+            <td><code>git fetch origin</code></td>
+          </tr>
+          <tr>
+            <td>想把 server 修改合併到本機，本機修改也要保留</td>
+            <td><code>git pull origin main</code></td>
+          </tr>
+          <tr>
+            <td>本機修改不要了，完全以 server 為準</td>
+            <td><code>git fetch origin</code><br><code>git reset --hard origin/main</code></td>
+          </tr>
+          <tr>
+            <td>本機修改不要了，連未追蹤的新檔案也不要</td>
+            <td><code>git fetch origin</code><br><code>git reset --hard origin/main</code><br><code>git clean -fd</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>所以如果本機改一改，但 server 也有修改，且你要放棄本機版本，正確流程不是 <code>fetch</code> + <code>pull</code> + <code>push</code>，而是：</p>
+
+      <pre><code>git status
+git fetch origin
+git reset --hard origin/main</code></pre>
+
+      <p>等本機變成 server 版本後，再重新修改、commit、push。</p>
+
+      <h3>10.8 Pull 之後如果出現 conflict，要去哪裡看差異？</h3>
+
+      <p>如果執行：</p>
+
+      <pre><code>git pull origin main</code></pre>
+
+      <p>之後看到類似：</p>
+
+      <pre><code>CONFLICT (content): Merge conflict in README.md
+Automatic merge failed; fix conflicts and then commit the result.</code></pre>
+
+      <p>代表 Git 已經知道哪些檔案衝突，但它不知道應該保留哪一邊，所以需要你人工處理。</p>
+
+      <h4>第一步：用 <code>git status</code> 看哪些檔案衝突</h4>
+
+      <pre><code>git status</code></pre>
+
+      <p>你可能會看到：</p>
+
+      <pre><code>Unmerged paths:
+  both modified:   README.md</code></pre>
+
+      <p><code>both modified</code> 的意思是：本機和 server 都改過同一個檔案，所以 Git 無法自動決定。</p>
+
+      <h4>第二步：打開衝突檔案看標記</h4>
+
+      <p>打開衝突檔案，例如 <code>README.md</code>，你會看到 Git 插入的衝突標記：</p>
+
+      <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+這是你本機目前的內容
+=======
+這是 server / origin/main 的內容
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/main</code></pre>
+
+      <p>意思是：</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>標記</th>
+            <th>意思</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code></td>
+            <td>從這裡開始是你本機目前版本的內容。</td>
+          </tr>
+          <tr>
+            <td><code>=======</code></td>
+            <td>分隔線，上面是本機，下面是遠端。</td>
+          </tr>
+          <tr>
+            <td><code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/main</code></td>
+            <td>到這裡結束的是 server / 遠端版本的內容。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>第三步：決定要保留哪一邊</h4>
+
+      <p>你可以選擇：</p>
+      <ul>
+        <li>保留本機內容。</li>
+        <li>保留 server 內容。</li>
+        <li>兩邊都保留，手動整理成新的內容。</li>
+      </ul>
+
+      <p>整理完後，必須把這些 conflict 標記全部刪掉：</p>
+
+      <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+=======
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/main</code></pre>
+
+      <p>最後檔案應該只剩下你想保留的正常內容。</p>
+
+      <h4>第四步：用 VS Code 看差異與解衝突</h4>
+
+      <p>新手最建議用 VS Code。開啟專案資料夾後，衝突檔案上方通常會出現選項：</p>
+
+      <ul>
+        <li><strong>Accept Current Change</strong>：保留本機版本。</li>
+        <li><strong>Accept Incoming Change</strong>：保留 server / 遠端版本。</li>
+        <li><strong>Accept Both Changes</strong>：兩邊都保留。</li>
+        <li><strong>Compare Changes</strong>：比較兩邊差異。</li>
+      </ul>
+
+      <p>其中：</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>VS Code 選項</th>
+            <th>意思</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Current Change</td>
+            <td>目前本機版本，也就是 <code>HEAD</code>。</td>
+          </tr>
+          <tr>
+            <td>Incoming Change</td>
+            <td>從 server 拉下來的版本，也就是 <code>origin/main</code>。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>第五步：解完衝突後完成 merge commit</h4>
+
+      <p>修改並存檔後，執行：</p>
+
+      <pre><code>git add .
+git commit -m "Resolve merge conflict"
+git push</code></pre>
+
+      <p>這代表你已經人工解決衝突，並把合併結果 commit 起來。</p>
+
+      <h4>也可以用命令列看差異</h4>
+
+      <p>如果不用 VS Code，可以先看目前衝突檔案：</p>
+
+      <pre><code>git status</code></pre>
+
+      <p>看尚未解決的差異：</p>
+
+      <pre><code>git diff</code></pre>
+
+      <p>看本機版本和遠端版本的差異：</p>
+
+      <pre><code>git diff HEAD origin/main</code></pre>
+
+      <div class="callout">
+        <strong>新手建議</strong>
+        <p>第一次遇到 conflict，先用 VS Code 看會比較直覺。命令列的 <code>git diff</code> 適合之後熟悉 Git 再學。</p>
+      </div>
+
+      <h4>如果解到一半想放棄這次 merge</h4>
+
+      <p>如果你執行 <code>git pull</code> 後產生 conflict，但你不想繼續解，可以中止這次 merge：</p>
+
+      <pre><code>git merge --abort</code></pre>
+
+      <div class="callout warn">
+        <strong><code>git merge --abort</code> 不是放棄本機修改</strong>
+        <p><code>git merge --abort</code> 的意思是「取消這次 merge / pull 合併動作，回到 pull 之前的狀態」。它通常會保留你原本在本機的修改，只是不再套用這次從 server 拉下來準備合併的內容。</p>
+      </div>
+
+      <p>也就是說，它比較像：</p>
+
+      <pre><code>這次合併我不要做了，請回到合併前</code></pre>
+
+      <p>而不是：</p>
+
+      <pre><code>本機修改我不要了</code></pre>
+
+      <p>如果你的目標是「本機修改不要了，完全以 server 為準」，應該用：</p>
+
+      <pre><code>git fetch origin
+git reset --hard origin/main</code></pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>指令</th>
+            <th>作用</th>
+            <th>是否會放棄本機修改？</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>git merge --abort</code></td>
+            <td>取消這次 merge / pull，回到合併前。</td>
+            <td>通常不會；它保留合併前的本機狀態。</td>
+          </tr>
+          <tr>
+            <td><code>git pull origin main</code></td>
+            <td>把 server 更新抓下來並嘗試合併。</td>
+            <td>不會主動放棄；會嘗試合併，必要時要求解衝突。</td>
+          </tr>
+          <tr>
+            <td><code>git reset --hard origin/main</code></td>
+            <td>強制把本機已追蹤檔案重設成 server 版本。</td>
+            <td>會；本機已追蹤檔案的修改會被丟掉。</td>
+          </tr>
+          <tr>
+            <td><code>git clean -fd</code></td>
+            <td>刪除本機未追蹤檔案。</td>
+            <td>會；還沒 <code>git add</code> 的新檔案也可能被刪掉。</td>
+          </tr>
+        </tbody>
+      </table>
+
+
     </section>
 
 
@@ -1178,6 +1514,30 @@ python main.py
           <tr>
             <td>抓遠端最新內容並合併到本機</td>
             <td><code>git pull origin main</code></td>
+          </tr>
+          <tr>
+            <td>放棄本機修改，以遠端 main 為準</td>
+            <td><code>git fetch origin</code><br><code>git reset --hard origin/main</code></td>
+          </tr>
+          <tr>
+            <td>預覽會刪除哪些未追蹤檔案</td>
+            <td><code>git clean -fdn</code></td>
+          </tr>
+          <tr>
+            <td>查看衝突與目前 Git 狀態</td>
+            <td><code>git status</code></td>
+          </tr>
+          <tr>
+            <td>查看目前尚未解決的差異</td>
+            <td><code>git diff</code></td>
+          </tr>
+          <tr>
+            <td>中止 merge / pull 衝突處理</td>
+            <td><code>git merge --abort</code></td>
+          </tr>
+          <tr>
+            <td>取消這次 merge / pull</td>
+            <td><code>git merge --abort</code>，回到合併前，不等於放棄本機修改</td>
           </tr>
         </tbody>
       </table>
