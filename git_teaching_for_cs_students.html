@@ -200,6 +200,7 @@
         <li><a href="#repo-cli">用命令列建立並推送 Repository</a></li>
         <li><a href="#first-push-main-auth">第一次 Push 前的 main 分支與認證謎題</a></li>
         <li><a href="#upload">上傳檔案、Check in、Commit、Push</a></li>
+        <li><a href="#fetch-pull">Server 端有修改時，本機要怎麼同步？</a></li>
         <li><a href="#message">Commit Message 怎麼寫</a></li>
         <li><a href="#public-private">Public / Private 怎麼選</a></li>
         <li><a href="#common">常見錯誤與排除</a></li>
@@ -815,12 +816,123 @@ git push</code></pre>
       </div>
     </section>
 
+
+    <section id="fetch-pull">
+      <h2>10. Server 端有修改時，本機要怎麼同步？</h2>
+
+      <p>如果 GitHub / Gitea / GitLab 這類 server 端已經有新的 commit，而你的本機還停在舊版本，這時不要直接硬推。因為遠端有你本機沒有的內容，Git 可能會拒絕 push，避免你不小心覆蓋別人的修改。</p>
+
+      <p>常見錯誤訊息可能會像：</p>
+
+      <pre><code>! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/你的帳號/你的repo.git'
+hint: Updates were rejected because the remote contains work that you do not have locally.</code></pre>
+
+      <div class="callout warn">
+        <strong>重點</strong>
+        <p>看到 <code>fetch first</code> 或 <code>remote contains work that you do not have locally</code>，通常不是認證問題，而是遠端已經有新版本，本機要先同步。</p>
+      </div>
+
+      <h3>10.1 <code>git fetch</code> 是什麼？</h3>
+      <p><code>git fetch</code> 的意思是：先去 server 端把最新狀態抓回來，但<strong>不立刻改動你目前的工作檔案</strong>。</p>
+
+      <pre><code>git fetch origin</code></pre>
+
+      <p>它會更新本機對遠端 branch 的認知，例如 <code>origin/main</code>，但不會直接把檔案合併進你目前的 <code>main</code>。</p>
+
+      <div class="diagram">git fetch origin
+→ 把 server 上的最新 commit 資訊抓回本機
+→ 更新 origin/main
+→ 不直接改你目前工作目錄的檔案</div>
+
+      <h3>10.2 <code>git pull</code> 是什麼？</h3>
+      <p><code>git pull</code> 可以簡單理解成：</p>
+
+      <pre><code>git fetch + git merge</code></pre>
+
+      <p>也就是先抓 server 最新內容，再嘗試合併到你目前所在的 branch。</p>
+
+      <pre><code>git pull origin main</code></pre>
+
+      <p>如果沒有衝突，Git 會自動合併。若同一個檔案同一段內容，本機和 server 都被修改過，可能會出現 conflict，需要人工處理。</p>
+
+      <h3>10.3 <code>fetch</code> 和 <code>pull</code> 差在哪？</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>指令</th>
+            <th>會抓 server 最新狀態？</th>
+            <th>會直接改本機工作檔案？</th>
+            <th>適合情境</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>git fetch origin</code></td>
+            <td>會</td>
+            <td>不會</td>
+            <td>想先看看 server 有沒有新 commit，不想立刻合併。</td>
+          </tr>
+          <tr>
+            <td><code>git pull origin main</code></td>
+            <td>會</td>
+            <td>會，會嘗試合併到目前 branch</td>
+            <td>確定要把 server 最新內容同步到本機。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>10.4 建議新手流程：push 前先同步</h3>
+      <p>如果你不是唯一一個會改這個 repo，或你曾經在 GitHub 網頁上修改 README、上傳檔案，就建議 push 前先做：</p>
+
+      <pre><code>git status
+git fetch origin
+git pull origin main
+git push</code></pre>
+
+      <p>如果你第一次 push 時，GitHub repo 上已經有 README，而本機也是自己 <code>git init</code> 出來的，兩邊歷史可能不相關。這時可能需要：</p>
+
+      <pre><code>git pull origin main --allow-unrelated-histories
+git push -u origin main</code></pre>
+
+      <div class="callout danger">
+        <strong>不要用 reset 取代日常同步</strong>
+        <p><code>git reset --hard origin/main</code> 是強制讓本機變成 server 版本，會丟掉本機尚未保存的修改。它適合「本機不要了，以 server 為準」的情境，不適合當成日常更新流程。</p>
+      </div>
+
+      <h3>10.5 如果你只想看看 server 有沒有新東西</h3>
+      <p>可以先 fetch，再比較：</p>
+
+      <pre><code>git fetch origin
+git status</code></pre>
+
+      <p>如果本機落後遠端，可能會看到類似：</p>
+
+      <pre><code>Your branch is behind 'origin/main' by 1 commit, and can be fast-forwarded.</code></pre>
+
+      <p>這代表遠端有新 commit，本機可以用：</p>
+
+      <pre><code>git pull origin main</code></pre>
+
+      <p>同步回來。</p>
+
+      <h3>10.6 最簡單的心智模型</h3>
+
+      <div class="diagram">push：本機 → server
+pull：server → 本機，並嘗試合併
+fetch：server → 本機的遠端追蹤資訊，不直接改工作檔案</div>
+
+      <p>所以如果 server 端有修改，本機通常應該先 <code>fetch</code> 或 <code>pull</code>。新手最常用的是 <code>git pull origin main</code>，想安全觀察遠端變化時，先用 <code>git fetch origin</code>。</p>
+    </section>
+
+
     <section id="message">
-      <h2>10. Commit Message 怎麼寫？</h2>
+      <h2>11. Commit Message 怎麼寫？</h2>
 
       <p>Commit message 是給未來的自己、同學、助教、同事看的。好的 message 可以讓人一眼知道這次修改的目的。</p>
 
-      <h3>10.1 不好的寫法</h3>
+      <h3>11.1 不好的寫法</h3>
       <pre><code>update
 fix
 test
@@ -829,14 +941,14 @@ test
 最後版
 不知道</code></pre>
 
-      <h3>10.2 比較好的寫法</h3>
+      <h3>11.2 比較好的寫法</h3>
       <pre><code>Add student score calculator
 Fix division by zero error
 Update README with setup steps
 Refactor input validation logic
 Add sample data for homework 2</code></pre>
 
-      <h3>10.3 建議格式</h3>
+      <h3>11.3 建議格式</h3>
       <p>新手可以先用這種格式：</p>
       <pre><code>動詞 + 修改對象 + 目的</code></pre>
 
@@ -874,7 +986,7 @@ Add sample data for homework 2</code></pre>
     </section>
 
     <section id="public-private">
-      <h2>11. Public / Private 怎麼選？</h2>
+      <h2>12. Public / Private 怎麼選？</h2>
 
       <table>
         <thead>
@@ -901,7 +1013,7 @@ Add sample data for homework 2</code></pre>
         </tbody>
       </table>
 
-      <h3>11.1 資工新生建議</h3>
+      <h3>12.1 資工新生建議</h3>
       <ul>
         <li>作業：用 Private。</li>
         <li>自己整理過、確定可以展示的小作品：用 Public。</li>
@@ -909,7 +1021,7 @@ Add sample data for homework 2</code></pre>
         <li>含有資料集、帳密、token、個資：不要直接上傳。</li>
       </ul>
 
-      <h3>11.2 README 要寫什麼？</h3>
+      <h3>12.2 README 要寫什麼？</h3>
       <p>一個基本 README 可以包含：</p>
       <pre><code># 專案名稱
 
@@ -931,9 +1043,9 @@ python main.py
     </section>
 
     <section id="common">
-      <h2>12. 常見錯誤與排除</h2>
+      <h2>13. 常見錯誤與排除</h2>
 
-      <h3>12.1 git 不是內部或外部命令</h3>
+      <h3>13.1 git 不是內部或外部命令</h3>
       <p>代表 Windows 找不到 Git。請確認：</p>
       <ul>
         <li>Git 是否已安裝。</li>
@@ -941,7 +1053,7 @@ python main.py
         <li>關掉 Terminal 後重新開啟。</li>
       </ul>
 
-      <h3>12.2 push 時要求登入或失敗</h3>
+      <h3>13.2 push 時要求登入或失敗</h3>
       <p>可能原因：</p>
       <ul>
         <li>你尚未登入 GitHub。</li>
@@ -956,7 +1068,7 @@ python main.py
       <p>修改遠端 URL：</p>
       <pre><code>git remote set-url origin https://github.com/你的帳號/你的repo.git</code></pre>
 
-      <h3>12.3 nothing to commit, working tree clean</h3>
+      <h3>13.3 nothing to commit, working tree clean</h3>
       <p>這通常不是錯誤，意思是目前沒有新的修改可以 commit。可能情況：</p>
       <ul>
         <li>你真的沒有改檔案。</li>
@@ -964,17 +1076,17 @@ python main.py
         <li>你在錯的資料夾執行 Git 指令。</li>
       </ul>
 
-      <h3>12.4 accidentally committed wrong file</h3>
+      <h3>13.4 accidentally committed wrong file</h3>
       <p>如果只是還沒 push，新手可以先不要急著處理複雜指令，先詢問老師、助教或有經驗的人。尤其是如果誤 commit 密碼或 token，重點不是刪掉檔案而已，還要立即撤換該密碼或 token。</p>
 
-      <h3>12.5 忘記先 pull 就 push</h3>
+      <h3>13.5 忘記先 pull 就 push</h3>
       <p>如果 GitHub 上有別人更新過，你本機沒有同步，push 可能失敗。先執行：</p>
       <pre><code>git pull</code></pre>
       <p>再依照提示處理。初學階段若是個人 repo，通常比較少遇到複雜衝突。</p>
     </section>
 
     <section id="practice">
-      <h2>13. 練習題：完成你的第一個 GitHub 專案</h2>
+      <h2>14. 練習題：完成你的第一個 GitHub 專案</h2>
 
       <h3>練習 A：Private 作業 Repo</h3>
       <ol class="checklist">
@@ -994,7 +1106,7 @@ python main.py
         <li>到 GitHub 頁面確認檔案與 commit 紀錄都有出現。</li>
       </ol>
 
-      <h3>13.1 最小指令速查表</h3>
+      <h3>14.1 最小指令速查表</h3>
       <table>
         <thead>
           <tr>
@@ -1059,18 +1171,27 @@ python main.py
             <td>之後 push</td>
             <td><code>git push</code></td>
           </tr>
+          <tr>
+            <td>抓遠端最新資訊但不合併</td>
+            <td><code>git fetch origin</code></td>
+          </tr>
+          <tr>
+            <td>抓遠端最新內容並合併到本機</td>
+            <td><code>git pull origin main</code></td>
+          </tr>
         </tbody>
       </table>
     </section>
 
     <section id="teacher-note">
-      <h2>14. 給家長或老師的教學建議</h2>
+      <h2>15. 給家長或老師的教學建議</h2>
       <p>第一次教 Git，不建議一開始就講 branch、merge、rebase、fork、pull request。那些是團隊協作與開源流程，很重要，但對剛接觸程式的新生來說容易過載。</p>
       <p>第一階段只要讓學生建立以下心智模型即可：</p>
       <ul>
         <li>一個專案一個 repo。</li>
         <li>寫完一小段有意義的修改，就 commit。</li>
         <li>commit message 要讓未來的自己看得懂。</li>
+        <li>push 之前，先確認 server 端是否有新版本；必要時先 pull。</li>
         <li>push 之後，GitHub 上應該看得到最新版本。</li>
         <li>Public 可以展示，Private 適合作業。</li>
       </ul>
