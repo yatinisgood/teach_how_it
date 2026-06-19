@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Git 入門教學：給資工系新生的現實 Coding 環境第一課</title>
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --paper: #ffffff;
+      --ink: #1f2328;
+      --muted: #59636e;
+      --line: #d0d7de;
+      --accent: #0969da;
+      --accent-soft: #ddf4ff;
+      --warn: #fff8c5;
+      --danger: #ffebe9;
+      --ok: #dafbe1;
+      --code: #0d1117;
+      --code-ink: #e6edf3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+      line-height: 1.75;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    header {
+      background: linear-gradient(135deg, #0d1117 0%, #24292f 60%, #0969da 100%);
+      color: white;
+      padding: 56px 24px;
+    }
+    header .wrap, main {
+      max-width: 1050px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.15;
+      margin: 0 0 16px;
+    }
+    .subtitle {
+      font-size: 1.15rem;
+      opacity: .92;
+      max-width: 860px;
+    }
+    main {
+      background: var(--paper);
+      padding: 32px 28px 72px;
+      box-shadow: 0 12px 40px rgba(31, 35, 40, .08);
+      margin-top: -28px;
+      border-radius: 16px 16px 0 0;
+    }
+    h2 {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      margin-top: 44px;
+      color: #0d1117;
+    }
+    h3 {
+      margin-top: 30px;
+      color: #24292f;
+    }
+    a { color: var(--accent); }
+    .toc {
+      background: var(--accent-soft);
+      border: 1px solid #b6e3ff;
+      padding: 18px 22px;
+      border-radius: 12px;
+      margin: 24px 0 32px;
+    }
+    .toc ol {
+      margin-top: 8px;
+      columns: 2;
+    }
+    @media (max-width: 720px) {
+      .toc ol { columns: 1; }
+      main { padding: 24px 18px 56px; }
+      header { padding: 40px 18px; }
+    }
+    .callout {
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 18px 0;
+      background: #f6f8fa;
+    }
+    .callout strong { display: inline-block; margin-bottom: 4px; }
+    .warn { background: var(--warn); border-left-color: #bf8700; }
+    .danger { background: var(--danger); border-left-color: #cf222e; }
+    .ok { background: var(--ok); border-left-color: #1a7f37; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: .95em;
+      background: rgba(175, 184, 193, .2);
+      border-radius: 6px;
+      padding: .15em .35em;
+    }
+    pre {
+      position: relative;
+      background: var(--code);
+      color: var(--code-ink);
+      padding: 16px 18px;
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #30363d;
+      line-height: 1.55;
+      margin: 14px 0 22px;
+    }
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: .95rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: .96rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+    }
+    th {
+      background: #f6f8fa;
+      text-align: left;
+    }
+    .kbd {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 0 .4em;
+      background: #fff;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: .9em;
+    }
+    .checklist li { margin-bottom: 8px; }
+    .footer {
+      color: var(--muted);
+      font-size: .92rem;
+      border-top: 1px solid var(--line);
+      margin-top: 56px;
+      padding-top: 20px;
+    }
+    .step {
+      counter-increment: step;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 16px 0;
+    }
+    .step h4 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+    .step h4::before {
+      content: "步驟 " counter(step) "：";
+      color: var(--accent);
+    }
+    .steps { counter-reset: step; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Git 入門教學</h1>
+      <div class="subtitle">給資工系新生的現實 Coding 環境第一課：從建立 GitHub 帳號、Windows 安裝 Git、建立 Public / Private Repo，到第一次上傳、Check in、Commit 與 Push。</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="toc">
+      <strong>本文件目標</strong>
+      <p>學完後，學生應該可以自己建立一個 GitHub repository，知道 public / private 差異，會用網頁介面與命令列把程式碼上傳，並寫出基本合格的 commit 備註。</p>
+      <ol>
+        <li><a href="#why">為什麼資工新生要先學 Git？</a></li>
+        <li><a href="#concept">先懂 5 個核心概念</a></li>
+        <li><a href="#account">建立 GitHub 帳號</a></li>
+        <li><a href="#windows">Windows 環境安裝 Git</a></li>
+        <li><a href="#config">第一次設定 Git 身分</a></li>
+        <li><a href="#repo-web">用網頁手動建立 Repository</a></li>
+        <li><a href="#repo-cli">用命令列建立並推送 Repository</a></li>
+        <li><a href="#upload">上傳檔案、Check in、Commit、Push</a></li>
+        <li><a href="#message">Commit Message 怎麼寫</a></li>
+        <li><a href="#public-private">Public / Private 怎麼選</a></li>
+        <li><a href="#common">常見錯誤與排除</a></li>
+        <li><a href="#practice">練習題</a></li>
+      </ol>
+    </section>
+
+    <section id="why">
+      <h2>1. 為什麼資工新生要先學 Git？</h2>
+      <p>在學校剛開始寫程式時，很多人會用「複製資料夾」來備份，例如：</p>
+      <pre><code>作業_v1
+作業_v2
+作業_最後版
+作業_最後版_真的最後
+作業_最後版_修正版</code></pre>
+      <p>這種方式在小作業還可以勉強撐住，但一旦進入真正的專案環境，會很快失控。Git 的作用就是把每一次重要修改記錄起來，讓你知道：</p>
+      <ul>
+        <li>誰改了什麼？</li>
+        <li>什麼時間改的？</li>
+        <li>為什麼要改？</li>
+        <li>如果改壞了，能不能回到以前的版本？</li>
+      </ul>
+
+      <div class="callout ok">
+        <strong>現實工作環境的重點</strong>
+        <p>公司、開源專案、研究室、多人專題幾乎都會使用 Git 或類似的版本控制流程。越早熟悉，越能避免「程式碼不見、版本混亂、不知道自己改了什麼」這些新手常見問題。</p>
+      </div>
+    </section>
+
+    <section id="concept">
+      <h2>2. 先懂 5 個核心概念</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>名詞</th>
+            <th>白話解釋</th>
+            <th>你可以想成</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Repository / Repo</td>
+            <td>一個專案的版本倉庫，通常對應一個程式專案。</td>
+            <td>一個有歷史紀錄的專案資料夾</td>
+          </tr>
+          <tr>
+            <td>Commit</td>
+            <td>把目前修改正式記錄成一個版本。</td>
+            <td>遊戲存檔，但會附上說明</td>
+          </tr>
+          <tr>
+            <td>Check in</td>
+            <td>口語上常指「把改好的東西提交進版本控管」。在 Git 裡通常就是 add + commit，有時也包含 push。</td>
+            <td>把作業交進系統</td>
+          </tr>
+          <tr>
+            <td>Push</td>
+            <td>把本機的 commit 上傳到 GitHub。</td>
+            <td>把本機存檔同步到雲端</td>
+          </tr>
+          <tr>
+            <td>Pull</td>
+            <td>把 GitHub 上的新版本抓回本機。</td>
+            <td>從雲端更新本機資料夾</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>先記這句話</strong>
+        <p><code>git add</code> 是選擇要收進版本的檔案，<code>git commit</code> 是建立版本紀錄，<code>git push</code> 是上傳到 GitHub。</p>
+      </div>
+    </section>
+
+    <section id="account">
+      <h2>3. 建立 GitHub 帳號</h2>
+      <p>Git 是版本控制工具，GitHub 是常見的雲端程式碼平台。你可以先把 GitHub 想成「程式碼版的 Google Drive + 歷史紀錄 + 專案協作平台」。</p>
+
+      <div class="steps">
+        <div class="step">
+          <h4>前往 GitHub</h4>
+          <p>打開 <a href="https://github.com/" target="_blank" rel="noopener">https://github.com/</a>，選擇 Sign up 建立帳號。</p>
+        </div>
+        <div class="step">
+          <h4>選擇帳號名稱</h4>
+          <p>建議使用乾淨、可長期使用的名稱，例如英文名、暱稱、學號縮寫。避免太隨便的名字，因為未來可能會出現在履歷、作品集或專題連結中。</p>
+        </div>
+        <div class="step">
+          <h4>設定 Email</h4>
+          <p>建議使用你會長期保留的 Email。Git commit 也會綁定作者名稱與 Email。</p>
+        </div>
+        <div class="step">
+          <h4>開啟雙重驗證</h4>
+          <p>GitHub 帳號未來可能會放作業、專題、作品集，建議啟用 Two-factor authentication，避免帳號被盜。</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>提醒</strong>
+        <p>不要把密碼、API Key、資料庫帳密、學校系統帳密放進 GitHub。即使是 Private repo，也不該把敏感資訊直接 commit 進去。</p>
+      </div>
+    </section>
+
+    <section id="windows">
+      <h2>4. Windows 環境安裝 Git</h2>
+
+      <h3>4.1 安裝 Git for Windows</h3>
+      <ol>
+        <li>前往 Git 官方網站：<a href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">https://git-scm.com/downloads/win</a></li>
+        <li>下載 Windows 版本安裝檔。</li>
+        <li>安裝時大多數選項可以維持預設值。</li>
+        <li>安裝完成後，開啟 <strong>Git Bash</strong> 或 Windows Terminal。</li>
+      </ol>
+
+      <h3>4.2 確認 Git 是否安裝成功</h3>
+      <p>在 Git Bash、PowerShell 或 Windows Terminal 輸入：</p>
+      <pre><code>git --version</code></pre>
+      <p>如果看到類似以下結果，代表成功：</p>
+      <pre><code>git version 2.xx.x.windows.x</code></pre>
+
+      <h3>4.3 建議安裝 VS Code</h3>
+      <p>資工新生建議同時安裝 Visual Studio Code，因為之後寫 C、Python、JavaScript、網頁、資料處理都常用得到。</p>
+      <ul>
+        <li>VS Code 可以直接看到 Git 修改狀態。</li>
+        <li>可以用圖形化方式 stage、commit、push。</li>
+        <li>但初學仍建議先學會基本命令列，理解背後發生什麼事。</li>
+      </ul>
+    </section>
+
+    <section id="config">
+      <h2>5. 第一次設定 Git 身分</h2>
+      <p>Git 需要知道每一次 commit 是誰做的。第一次使用 Git 時，請設定你的名稱與 Email。</p>
+
+      <pre><code>git config --global user.name "你的名字"
+git config --global user.email "你的Email@example.com"</code></pre>
+
+      <p>例如：</p>
+      <pre><code>git config --global user.name "Sherlock Tsai"
+git config --global user.email "student@example.com"</code></pre>
+
+      <p>確認設定：</p>
+      <pre><code>git config --global --list</code></pre>
+
+      <div class="callout">
+        <strong>這不是 GitHub 登入</strong>
+        <p><code>user.name</code> 和 <code>user.email</code> 是寫進 commit 紀錄的作者資訊，不是輸入 GitHub 密碼。GitHub 登入驗證會另外處理，例如瀏覽器授權、GitHub CLI、Personal Access Token 或 SSH。</p>
+      </div>
+    </section>
+
+    <section id="repo-web">
+      <h2>6. 第一次建立 Repo：手動用 GitHub 網頁操作</h2>
+      <p>這是最適合新手的第一種方式。先用網頁建立 repo，再把檔案上傳上去。</p>
+
+      <h3>6.1 建立 Public Repo</h3>
+      <div class="steps">
+        <div class="step">
+          <h4>登入 GitHub</h4>
+          <p>進入 GitHub 首頁，按右上角的 <strong>+</strong>，選擇 <strong>New repository</strong>。</p>
+        </div>
+        <div class="step">
+          <h4>輸入 Repository name</h4>
+          <p>例如：<code>my-first-python-project</code>。建議用英文、小寫、單字間用 <code>-</code>。</p>
+        </div>
+        <div class="step">
+          <h4>選擇 Public</h4>
+          <p>Public 代表任何人都可以看見這個 repo。適合放作品集、練習專案、開源範例，但不要放隱私資料。</p>
+        </div>
+        <div class="step">
+          <h4>勾選 Add a README file</h4>
+          <p>README 是專案說明書。新手建議勾選，讓 repo 一開始就有第一個檔案。</p>
+        </div>
+        <div class="step">
+          <h4>按 Create repository</h4>
+          <p>建立完成後，你會看到一個新的 GitHub 專案頁面。</p>
+        </div>
+      </div>
+
+      <h3>6.2 建立 Private Repo</h3>
+      <p>流程幾乎一樣，只是在 Visibility 選擇 <strong>Private</strong>。</p>
+      <p>Private repo 只有你自己與被授權的人看得到。適合：</p>
+      <ul>
+        <li>學校作業</li>
+        <li>還沒公開的作品</li>
+        <li>有個人資料或尚未整理乾淨的練習專案</li>
+      </ul>
+
+      <div class="callout danger">
+        <strong>Private 不是保險箱</strong>
+        <p>Private repo 仍然不應該放密碼、金鑰、資料庫連線字串。真正的敏感資訊應該放在環境變數、祕密管理工具或本機設定檔中，並用 <code>.gitignore</code> 排除。</p>
+      </div>
+
+      <h3>6.3 用 GitHub 網頁上傳檔案</h3>
+      <ol>
+        <li>進入 repo 頁面。</li>
+        <li>按 <strong>Add file</strong>。</li>
+        <li>選擇 <strong>Upload files</strong>。</li>
+        <li>拖曳檔案或選擇檔案。</li>
+        <li>在下方 <strong>Commit changes</strong> 區塊填寫 commit message。</li>
+        <li>按下 <strong>Commit changes</strong>。</li>
+      </ol>
+
+      <p>範例 commit message：</p>
+      <pre><code>Add first Python homework file</code></pre>
+
+      <p>這種方式很直覺，但缺點是比較不像實際工程環境。現實開發通常會在本機寫程式，再用 Git 指令或 VS Code 上傳。</p>
+    </section>
+
+    <section id="repo-cli">
+      <h2>7. 第一次建立 Repo：使用命令列</h2>
+
+      <h3>7.1 情境 A：GitHub 已經建立空 repo，本機再推上去</h3>
+      <p>這是最常見的新手流程。你先在 GitHub 建立 repo，再把本機專案推上去。</p>
+
+      <h4>假設你在 GitHub 建立了一個 repo：</h4>
+      <pre><code>https://github.com/你的帳號/my-first-project</code></pre>
+
+      <h4>在本機建立專案資料夾</h4>
+      <pre><code>mkdir my-first-project
+cd my-first-project</code></pre>
+
+      <h4>建立第一個檔案</h4>
+      <pre><code>echo "# My First Project" > README.md</code></pre>
+
+      <h4>初始化 Git</h4>
+      <pre><code>git init</code></pre>
+
+      <h4>查看目前狀態</h4>
+      <pre><code>git status</code></pre>
+
+      <p>你會看到 README.md 是尚未追蹤的檔案。</p>
+
+      <h4>加入版本控管</h4>
+      <pre><code>git add README.md</code></pre>
+
+      <p>如果你想一次加入目前資料夾內所有修改：</p>
+      <pre><code>git add .</code></pre>
+
+      <h4>建立第一個 commit</h4>
+      <pre><code>git commit -m "Initial commit"</code></pre>
+
+      <h4>設定主要分支名稱</h4>
+      <pre><code>git branch -M main</code></pre>
+
+      <h4>連接 GitHub 遠端 repo</h4>
+      <pre><code>git remote add origin https://github.com/你的帳號/my-first-project.git</code></pre>
+
+      <h4>推送到 GitHub</h4>
+      <pre><code>git push -u origin main</code></pre>
+
+      <div class="callout">
+        <strong><code>-u</code> 是什麼？</strong>
+        <p><code>git push -u origin main</code> 會設定本機 main 分支預設對應 GitHub 的 main。之後通常只要輸入 <code>git push</code> 就可以。</p>
+      </div>
+
+      <h3>7.2 情境 B：本機已經有一個作業資料夾</h3>
+      <p>假設你已經有一個資料夾：</p>
+      <pre><code>C:\Users\你的名字\Desktop\python-homework</code></pre>
+
+      <p>打開 Git Bash 或 Windows Terminal，進入該資料夾：</p>
+      <pre><code>cd /c/Users/你的名字/Desktop/python-homework</code></pre>
+
+      <p>或在檔案總管進入資料夾後，按右鍵選擇 <strong>Open Git Bash here</strong>。</p>
+
+      <p>接著執行：</p>
+      <pre><code>git init
+git add .
+git commit -m "Add first homework files"
+git branch -M main
+git remote add origin https://github.com/你的帳號/python-homework.git
+git push -u origin main</code></pre>
+
+      <h3>7.3 Public / Private 在命令列有差嗎？</h3>
+      <p>對 Git 指令來說，Public 和 Private 的操作幾乎一樣。差別在 GitHub 權限：</p>
+      <ul>
+        <li>Public repo：別人可以讀取與 clone。</li>
+        <li>Private repo：只有被授權的人可以讀取與 clone。</li>
+      </ul>
+      <p>你如果沒有權限 push，GitHub 會拒絕上傳。</p>
+    </section>
+
+    <section id="upload">
+      <h2>8. 上傳檔案後的 Check in / Commit 作業</h2>
+
+      <h3>8.1 標準日常流程</h3>
+      <p>日常寫程式時，最基本流程如下：</p>
+      <pre><code># 1. 查看目前有哪些檔案被修改
+git status
+
+# 2. 選擇要提交的檔案
+git add 檔名
+
+# 或一次加入所有修改
+git add .
+
+# 3. 建立 commit，寫清楚這次做了什麼
+git commit -m "你的備註"
+
+# 4. 上傳到 GitHub
+git push</code></pre>
+
+      <h3>8.2 一個完整例子</h3>
+      <p>假設你新增了 <code>hello.py</code>：</p>
+      <pre><code>print("Hello, Git!")</code></pre>
+
+      <p>接著執行：</p>
+      <pre><code>git status
+git add hello.py
+git commit -m "Add hello world Python example"
+git push</code></pre>
+
+      <h3>8.3 Check in 到底是什麼？</h3>
+      <p>在很多公司或前輩口語中，會說「你 check in 了嗎？」意思通常是：</p>
+      <ul>
+        <li>你有沒有把修改加入版本控管？</li>
+        <li>你有沒有 commit？</li>
+        <li>你有沒有 push 到遠端 repo？</li>
+      </ul>
+      <p>嚴格來說，Git 的正式指令是 <code>commit</code> 和 <code>push</code>，但在口語中 check in 常常泛指「把修改交進版本控制系統」。</p>
+
+      <div class="callout warn">
+        <strong>不要每改一個字就 commit</strong>
+        <p>Commit 應該是一個有意義的小單位，例如「完成登入畫面」、「修正計算錯誤」、「新增 README」。太碎或太大都不好。</p>
+      </div>
+    </section>
+
+    <section id="message">
+      <h2>9. Commit Message 怎麼寫？</h2>
+
+      <p>Commit message 是給未來的自己、同學、助教、同事看的。好的 message 可以讓人一眼知道這次修改的目的。</p>
+
+      <h3>9.1 不好的寫法</h3>
+      <pre><code>update
+fix
+test
+123
+修改
+最後版
+不知道</code></pre>
+
+      <h3>9.2 比較好的寫法</h3>
+      <pre><code>Add student score calculator
+Fix division by zero error
+Update README with setup steps
+Refactor input validation logic
+Add sample data for homework 2</code></pre>
+
+      <h3>9.3 建議格式</h3>
+      <p>新手可以先用這種格式：</p>
+      <pre><code>動詞 + 修改對象 + 目的</code></pre>
+
+      <table>
+        <thead>
+          <tr>
+            <th>情境</th>
+            <th>建議 commit message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>新增第一份作業</td>
+            <td><code>Add homework 1 solution</code></td>
+          </tr>
+          <tr>
+            <td>修正輸出格式</td>
+            <td><code>Fix output format for homework 1</code></td>
+          </tr>
+          <tr>
+            <td>補上專案說明</td>
+            <td><code>Update README with usage instructions</code></td>
+          </tr>
+          <tr>
+            <td>移除不需要的測試檔</td>
+            <td><code>Remove unused test file</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout ok">
+        <strong>簡單原則</strong>
+        <p>看到 commit message 的人，應該不用打開程式碼，就大概知道你這次做了什麼。</p>
+      </div>
+    </section>
+
+    <section id="public-private">
+      <h2>10. Public / Private 怎麼選？</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>類型</th>
+            <th>誰看得到？</th>
+            <th>適合放什麼？</th>
+            <th>不適合放什麼？</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Public</td>
+            <td>任何人</td>
+            <td>作品集、開源練習、可展示專案、教學範例</td>
+            <td>作業答案、個資、API Key、未整理的私人程式</td>
+          </tr>
+          <tr>
+            <td>Private</td>
+            <td>你與被授權的人</td>
+            <td>學校作業、個人練習、還沒公開的專題</td>
+            <td>密碼、金鑰、機密資料、正式個資資料集</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>10.1 資工新生建議</h3>
+      <ul>
+        <li>作業：用 Private。</li>
+        <li>自己整理過、確定可以展示的小作品：用 Public。</li>
+        <li>想放履歷的作品：Public，但 README 要寫清楚。</li>
+        <li>含有資料集、帳密、token、個資：不要直接上傳。</li>
+      </ul>
+
+      <h3>10.2 README 要寫什麼？</h3>
+      <p>一個基本 README 可以包含：</p>
+      <pre><code># 專案名稱
+
+## 專案簡介
+這個專案在做什麼。
+
+## 使用技術
+- Python 3
+- Git
+- VS Code
+
+## 如何執行
+```bash
+python main.py
+```
+
+## 作者
+你的名字</code></pre>
+    </section>
+
+    <section id="common">
+      <h2>11. 常見錯誤與排除</h2>
+
+      <h3>11.1 git 不是內部或外部命令</h3>
+      <p>代表 Windows 找不到 Git。請確認：</p>
+      <ul>
+        <li>Git 是否已安裝。</li>
+        <li>安裝時是否有加入 PATH。</li>
+        <li>關掉 Terminal 後重新開啟。</li>
+      </ul>
+
+      <h3>11.2 push 時要求登入或失敗</h3>
+      <p>可能原因：</p>
+      <ul>
+        <li>你尚未登入 GitHub。</li>
+        <li>你沒有該 repo 的寫入權限。</li>
+        <li>Private repo 需要正確驗證。</li>
+        <li>遠端 URL 寫錯。</li>
+      </ul>
+
+      <p>查看遠端 URL：</p>
+      <pre><code>git remote -v</code></pre>
+
+      <p>修改遠端 URL：</p>
+      <pre><code>git remote set-url origin https://github.com/你的帳號/你的repo.git</code></pre>
+
+      <h3>11.3 nothing to commit, working tree clean</h3>
+      <p>這通常不是錯誤，意思是目前沒有新的修改可以 commit。可能情況：</p>
+      <ul>
+        <li>你真的沒有改檔案。</li>
+        <li>你改的檔案沒有存檔。</li>
+        <li>你在錯的資料夾執行 Git 指令。</li>
+      </ul>
+
+      <h3>11.4 accidentally committed wrong file</h3>
+      <p>如果只是還沒 push，新手可以先不要急著處理複雜指令，先詢問老師、助教或有經驗的人。尤其是如果誤 commit 密碼或 token，重點不是刪掉檔案而已，還要立即撤換該密碼或 token。</p>
+
+      <h3>11.5 忘記先 pull 就 push</h3>
+      <p>如果 GitHub 上有別人更新過，你本機沒有同步，push 可能失敗。先執行：</p>
+      <pre><code>git pull</code></pre>
+      <p>再依照提示處理。初學階段若是個人 repo，通常比較少遇到複雜衝突。</p>
+    </section>
+
+    <section id="practice">
+      <h2>12. 練習題：完成你的第一個 GitHub 專案</h2>
+
+      <h3>練習 A：Private 作業 Repo</h3>
+      <ol class="checklist">
+        <li>建立一個 Private repo，名稱為 <code>cs-homework-practice</code>。</li>
+        <li>在本機建立 <code>README.md</code>。</li>
+        <li>新增一個 <code>hello.py</code>。</li>
+        <li>commit message 寫：<code>Add hello world homework practice</code>。</li>
+        <li>push 到 GitHub。</li>
+      </ol>
+
+      <h3>練習 B：Public 作品 Repo</h3>
+      <ol class="checklist">
+        <li>建立一個 Public repo，名稱為 <code>my-first-portfolio-project</code>。</li>
+        <li>README 說明這個專案是你的第一個 Git 練習。</li>
+        <li>新增一個簡單程式，例如 BMI 計算器、成績平均計算器或猜數字遊戲。</li>
+        <li>至少做兩次 commit。</li>
+        <li>到 GitHub 頁面確認檔案與 commit 紀錄都有出現。</li>
+      </ol>
+
+      <h3>12.1 最小指令速查表</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>目的</th>
+            <th>指令</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>查看 Git 版本</td>
+            <td><code>git --version</code></td>
+          </tr>
+          <tr>
+            <td>設定名稱</td>
+            <td><code>git config --global user.name "你的名字"</code></td>
+          </tr>
+          <tr>
+            <td>設定 Email</td>
+            <td><code>git config --global user.email "你的Email"</code></td>
+          </tr>
+          <tr>
+            <td>初始化 repo</td>
+            <td><code>git init</code></td>
+          </tr>
+          <tr>
+            <td>查看狀態</td>
+            <td><code>git status</code></td>
+          </tr>
+          <tr>
+            <td>加入檔案</td>
+            <td><code>git add 檔名</code> 或 <code>git add .</code></td>
+          </tr>
+          <tr>
+            <td>建立 commit</td>
+            <td><code>git commit -m "備註"</code></td>
+          </tr>
+          <tr>
+            <td>連接 GitHub repo</td>
+            <td><code>git remote add origin repo網址</code></td>
+          </tr>
+          <tr>
+            <td>第一次 push</td>
+            <td><code>git push -u origin main</code></td>
+          </tr>
+          <tr>
+            <td>之後 push</td>
+            <td><code>git push</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="teacher-note">
+      <h2>13. 給家長或老師的教學建議</h2>
+      <p>第一次教 Git，不建議一開始就講 branch、merge、rebase、fork、pull request。那些是團隊協作與開源流程，很重要，但對剛接觸程式的新生來說容易過載。</p>
+      <p>第一階段只要讓學生建立以下心智模型即可：</p>
+      <ul>
+        <li>一個專案一個 repo。</li>
+        <li>寫完一小段有意義的修改，就 commit。</li>
+        <li>commit message 要讓未來的自己看得懂。</li>
+        <li>push 之後，GitHub 上應該看得到最新版本。</li>
+        <li>Public 可以展示，Private 適合作業。</li>
+      </ul>
+      <p>等學生能熟練完成 add → commit → push，再進入 branch、pull request、code review，會比較接近真實工程教育的節奏。</p>
+    </section>
+
+    <section class="footer">
+      <h2>參考資料</h2>
+      <ul>
+        <li>Git 官方下載：<a href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">https://git-scm.com/downloads/win</a></li>
+        <li>Git 官方文件：<a href="https://git-scm.com/docs/user-manual" target="_blank" rel="noopener">https://git-scm.com/docs/user-manual</a></li>
+        <li>Git Book：First-Time Git Setup：<a href="https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup" target="_blank" rel="noopener">https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup</a></li>
+        <li>GitHub Docs：Set up Git：<a href="https://docs.github.com/en/get-started/git-basics/set-up-git" target="_blank" rel="noopener">https://docs.github.com/en/get-started/git-basics/set-up-git</a></li>
+        <li>GitHub Docs：Creating a new repository：<a href="https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository" target="_blank" rel="noopener">https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository</a></li>
+        <li>GitHub Docs：Setting repository visibility：<a href="https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility" target="_blank" rel="noopener">https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility</a></li>
+      </ul>
+      <p>文件版本：2026-06-19。適用對象：資工系新生、剛開始接觸程式與版本控制的學生。</p>
+    </section>
+  </main>
+</body>
+</html>
