@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHub CLI 教學｜從 Git、GitHub、Gitea 到 gh 指令</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --panel2: #0f1724;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --warn: #f2cc60;
+      --border: #30363d;
+      --code: #010409;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      line-height: 1.72;
+      color: var(--text);
+      background: radial-gradient(circle at top left, rgba(88,166,255,.18), transparent 28%), var(--bg);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 36px 20px 64px; }
+    header {
+      padding: 42px 30px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(22,27,34,.95), rgba(13,17,23,.78));
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 12px;
+      border: 1px solid rgba(88,166,255,.35);
+      border-radius: 999px;
+      color: #c9d1d9;
+      background: rgba(88,166,255,.08);
+      font-size: 14px;
+    }
+    h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1.12; margin: 20px 0 12px; }
+    h2 { font-size: 28px; margin: 44px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 20px; margin: 26px 0 10px; color: #f0f6fc; }
+    p { margin: 10px 0; color: #d2d9e0; }
+    .lead { font-size: 18px; max-width: 850px; color: #c9d1d9; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 22px 0; }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(22,27,34,.86);
+    }
+    .card strong { color: #fff; }
+    .toc { margin: 26px 0 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .toc a { display: block; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: rgba(1,4,9,.28); }
+    .note, .warn {
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent2);
+      background: rgba(63,185,80,.08);
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+    .warn { border-left-color: var(--warn); background: rgba(242,204,96,.08); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    code { background: rgba(110,118,129,.18); padding: .15em .35em; border-radius: 6px; }
+    pre {
+      margin: 12px 0 18px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--code);
+      overflow-x: auto;
+      color: #d2d9e0;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0 24px; overflow: hidden; border-radius: 12px; }
+    th, td { border: 1px solid var(--border); padding: 12px 14px; vertical-align: top; }
+    th { background: rgba(88,166,255,.10); text-align: left; color: #f0f6fc; }
+    td { background: rgba(22,27,34,.6); }
+    .pill { display: inline-block; font-size: 12px; color: #c9d1d9; background: rgba(88,166,255,.12); border: 1px solid rgba(88,166,255,.25); border-radius: 999px; padding: 2px 9px; margin-right: 6px; }
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 18px 0; }
+    .step { text-align: center; padding: 13px 8px; border: 1px solid var(--border); border-radius: 14px; background: rgba(22,27,34,.74); }
+    footer { margin-top: 50px; padding-top: 22px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+    @media (max-width: 820px) {
+      .grid, .toc, .flow { grid-template-columns: 1fr; }
+      header { padding: 30px 20px; }
+    }
+    @media print {
+      body { background: #fff; color: #111; }
+      header, .card, td, th, pre, .note, .warn { background: #fff; color: #111; box-shadow: none; }
+      a { color: #0645ad; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="badge">GitHub CLI / gh 入門教學</span>
+      <h1>用指令列操作 GitHub：從 Git、GitHub、Gitea 到 GitHub CLI</h1>
+      <p class="lead">這份教學適合已經大概知道 <code>git add</code>、<code>git commit</code>、<code>git push</code>，但還不熟 GitHub CLI 的使用者。重點會放在觀念釐清、安裝、登入、建立 repo、clone、issue、PR，以及常見排錯。</p>
+      <div class="toc">
+        <a href="#concept">1. 先搞懂 Git / GitHub / Gitea / GitHub CLI</a>
+        <a href="#install">2. 安裝 GitHub CLI</a>
+        <a href="#auth">3. 登入與驗證</a>
+        <a href="#workflow">4. 常用工作流程</a>
+        <a href="#commands">5. 常用指令速查</a>
+        <a href="#troubleshooting">6. 常見問題與排錯</a>
+      </div>
+    </header>
+
+    <section id="concept">
+      <h2>1. 先搞懂 Git / GitHub / Gitea / GitHub CLI</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Git</h3>
+          <p><strong>Git 是版本控制系統。</strong>它是免費、開源、分散式的版本控制工具，用來追蹤檔案變更、管理分支、合併程式碼、回到歷史版本。</p>
+          <p>你在本機執行的 <code>git init</code>、<code>git status</code>、<code>git commit</code>、<code>git push</code> 都是 Git 指令。</p>
+        </div>
+        <div class="card">
+          <h3>GitHub</h3>
+          <p><strong>GitHub 是以 Git 為核心的雲端協作平台。</strong>它幫你託管 repo，並提供 Pull Request、Issue、Actions、Release、權限控管等協作功能。</p>
+          <p>簡單講：Git 管版本；GitHub 管協作、託管與工作流程。</p>
+        </div>
+        <div class="card">
+          <h3>Gitea</h3>
+          <p><strong>Gitea 是可自架的 Git 服務。</strong>你可以把它想成「自己架一套類 GitHub 的服務」，常見於 NAS、內網、公司私有環境。</p>
+          <p>它不是取代 Git 指令，而是提供 Git repository 的 server 端管理介面。</p>
+        </div>
+      </div>
+
+      <h3>那 GitHub CLI 是什麼？</h3>
+      <p><strong>GitHub CLI 的指令是 <code>gh</code></strong>，它讓你在 Terminal / PowerShell / CMD 裡操作 GitHub 功能，例如建立 repo、開 PR、看 issue、查 workflow、產生 release，而不需要一直切到瀏覽器。</p>
+
+      <div class="note">
+        <strong>觀念重點：</strong><code>git</code> 與 <code>gh</code> 不是同一個東西。<code>git</code> 處理版本控制本身；<code>gh</code> 處理 GitHub 平台功能。實務上兩者會一起用。
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>工具</th><th>主要功能</th><th>典型指令</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Git</td><td>本機版本控制、分支、commit、merge、push/pull</td><td><code>git status</code><br><code>git commit</code><br><code>git push</code></td></tr>
+          <tr><td>GitHub</td><td>雲端 repo、PR、Issue、Actions、Release、團隊協作</td><td>通常在網頁操作</td></tr>
+          <tr><td>Gitea</td><td>自架 Git server 與協作平台</td><td>搭配 <code>git remote</code>、<code>git push</code></td></tr>
+          <tr><td>GitHub CLI</td><td>用指令列操作 GitHub 平台功能</td><td><code>gh auth login</code><br><code>gh repo create</code><br><code>gh pr create</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="install">
+      <h2>2. 安裝 GitHub CLI</h2>
+      <p>GitHub CLI 支援 Windows、macOS、Linux。安裝前建議先確認 Git 已安裝：</p>
+      <pre><code>git --version</code></pre>
+      <p>如果沒有 Git，請先安裝 Git，再安裝 GitHub CLI。因為 GitHub CLI 很多流程會搭配本機 Git repository 使用。</p>
+
+      <h3>Windows：使用 WinGet</h3>
+      <p>在 PowerShell 或 Windows Terminal 執行：</p>
+      <pre><code>winget install --id GitHub.cli --source winget</code></pre>
+      <p>升級：</p>
+      <pre><code>winget upgrade --id GitHub.cli --source winget</code></pre>
+      <div class="warn">
+        <strong>注意：</strong>Windows 安裝器會修改 PATH。安裝後請重新開啟一個新的 Windows Terminal 視窗；只開新分頁有時不會吃到新的 PATH。
+      </div>
+
+      <h3>macOS：使用 Homebrew</h3>
+      <pre><code>brew install gh</code></pre>
+      <p>升級：</p>
+      <pre><code>brew upgrade gh</code></pre>
+
+      <h3>Ubuntu / Debian：使用官方 apt 來源</h3>
+      <pre><code>(type -p wget &gt;/dev/null || (sudo apt update &amp;&amp; sudo apt install wget -y)) \
+  &amp;&amp; sudo mkdir -p -m 755 /etc/apt/keyrings \
+  &amp;&amp; out=$(mktemp) &amp;&amp; wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+  &amp;&amp; cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg &gt; /dev/null \
+  &amp;&amp; sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+  &amp;&amp; sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+  &amp;&amp; echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list &gt; /dev/null \
+  &amp;&amp; sudo apt update \
+  &amp;&amp; sudo apt install gh -y</code></pre>
+      <p>升級：</p>
+      <pre><code>sudo apt update
+sudo apt install gh</code></pre>
+
+      <h3>確認是否安裝成功</h3>
+      <pre><code>gh --version</code></pre>
+      <p>若能看到版本號，就代表 <code>gh</code> 指令已可使用。</p>
+    </section>
+
+    <section id="auth">
+      <h2>3. 登入與驗證</h2>
+      <p>安裝完 GitHub CLI 後，第一件事是登入 GitHub：</p>
+      <pre><code>gh auth login</code></pre>
+      <p>常見選項可以這樣選：</p>
+      <table>
+        <thead><tr><th>提示</th><th>建議選擇</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td>What account do you want to log into?</td><td><code>GitHub.com</code></td><td>一般 GitHub 帳號選這個；企業私有 GitHub 才選其他 host。</td></tr>
+          <tr><td>Preferred protocol for Git operations?</td><td><code>HTTPS</code> 或 <code>SSH</code></td><td>新手通常 HTTPS 較直覺；已配置 SSH key 者可選 SSH。</td></tr>
+          <tr><td>Authenticate Git with your GitHub credentials?</td><td><code>Yes</code></td><td>可讓 <code>git push</code> / <code>git pull</code> 使用 GitHub CLI 管理的認證。</td></tr>
+          <tr><td>How would you like to authenticate?</td><td>Login with browser</td><td>透過瀏覽器登入最簡單。</td></tr>
+        </tbody>
+      </table>
+      <p>登入後檢查狀態：</p>
+      <pre><code>gh auth status</code></pre>
+    </section>
+
+    <section id="workflow">
+      <h2>4. 常用工作流程</h2>
+      <h3>A. 建立一個新的 GitHub repo</h3>
+      <p>情境：你本機已經有一個資料夾，想要變成 Git repo 並推到 GitHub。</p>
+      <pre><code>cd my-project
+git init
+git add .
+git commit -m "Initial commit"
+gh repo create my-project --private --source=. --remote=origin --push</code></pre>
+      <p>說明：</p>
+      <ul>
+        <li><code>--private</code>：建立私有 repo。若要公開，可改 <code>--public</code>。</li>
+        <li><code>--source=.</code>：使用目前資料夾。</li>
+        <li><code>--remote=origin</code>：自動把 GitHub repo 加成 <code>origin</code> remote。</li>
+        <li><code>--push</code>：建立後直接 push。</li>
+      </ul>
+
+      <h3>B. Clone 一個 GitHub repo</h3>
+      <pre><code>gh repo clone OWNER/REPO</code></pre>
+      <p>例如：</p>
+      <pre><code>gh repo clone cli/cli</code></pre>
+
+      <h3>C. 查看目前 repo 資訊</h3>
+      <pre><code>gh repo view</code></pre>
+      <p>打開網頁版：</p>
+      <pre><code>gh repo view --web</code></pre>
+
+      <h3>D. Issue 操作</h3>
+      <pre><code>gh issue list
+gh issue view 123
+gh issue create --title "登入頁錯誤" --body "重現步驟：..."</code></pre>
+
+      <h3>E. Pull Request 操作</h3>
+      <p>典型 PR 流程：</p>
+      <div class="flow">
+        <div class="step">建立分支</div>
+        <div class="step">修改檔案</div>
+        <div class="step">commit</div>
+        <div class="step">push</div>
+        <div class="step">建立 PR</div>
+      </div>
+      <pre><code>git checkout -b feature/login-fix
+# 修改檔案
+git add .
+git commit -m "Fix login error"
+git push -u origin feature/login-fix
+gh pr create --title "Fix login error" --body "修正登入頁錯誤"</code></pre>
+      <p>查看 PR 狀態：</p>
+      <pre><code>gh pr status</code></pre>
+      <p>列出 PR：</p>
+      <pre><code>gh pr list</code></pre>
+      <p>切到某個 PR 的分支進行測試：</p>
+      <pre><code>gh pr checkout 123</code></pre>
+
+      <h3>F. GitHub Actions 操作</h3>
+      <pre><code>gh run list
+gh run view
+gh run watch</code></pre>
+      <p>這對 CI/CD 很有用，可以不用打開瀏覽器就看到 workflow 執行狀態。</p>
+
+      <h3>G. Release 操作</h3>
+      <pre><code>gh release create v1.0.0 --title "v1.0.0" --notes "第一個正式版本"</code></pre>
+    </section>
+
+    <section id="commands">
+      <h2>5. 常用指令速查</h2>
+      <table>
+        <thead><tr><th>目的</th><th>指令</th><th>備註</th></tr></thead>
+        <tbody>
+          <tr><td>登入 GitHub</td><td><code>gh auth login</code></td><td>第一次使用必做</td></tr>
+          <tr><td>查看登入狀態</td><td><code>gh auth status</code></td><td>確認 token / host / protocol</td></tr>
+          <tr><td>建立 repo</td><td><code>gh repo create</code></td><td>可互動式建立，也可加參數</td></tr>
+          <tr><td>Clone repo</td><td><code>gh repo clone OWNER/REPO</code></td><td>比複製 URL 更快</td></tr>
+          <tr><td>看 repo 內容</td><td><code>gh repo view</code></td><td>在 repo 資料夾內可省略 OWNER/REPO</td></tr>
+          <tr><td>打開 repo 網頁</td><td><code>gh repo view --web</code></td><td>快速跳瀏覽器</td></tr>
+          <tr><td>列 issue</td><td><code>gh issue list</code></td><td>可加 label、assignee 篩選</td></tr>
+          <tr><td>建立 issue</td><td><code>gh issue create</code></td><td>可互動式填寫</td></tr>
+          <tr><td>列 PR</td><td><code>gh pr list</code></td><td>查看 open PR</td></tr>
+          <tr><td>建立 PR</td><td><code>gh pr create</code></td><td>常用於 feature branch 完成後</td></tr>
+          <tr><td>看 PR 狀態</td><td><code>gh pr status</code></td><td>看自己相關 PR 很方便</td></tr>
+          <tr><td>查看 workflow run</td><td><code>gh run list</code></td><td>GitHub Actions 用</td></tr>
+          <tr><td>看說明</td><td><code>gh help</code> / <code>gh pr --help</code></td><td>每個子指令都有 help</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>6. 常見問題與排錯</h2>
+      <h3>問題 1：<code>gh</code> 不是內部或外部命令</h3>
+      <p>通常是 PATH 尚未更新。Windows 請重新開啟新的 Windows Terminal 視窗，再執行：</p>
+      <pre><code>gh --version</code></pre>
+
+      <h3>問題 2：<code>git push</code> 還是要求帳密</h3>
+      <p>先檢查 GitHub CLI 登入狀態：</p>
+      <pre><code>gh auth status</code></pre>
+      <p>如果你登入時沒有讓 GitHub CLI 管理 Git 認證，可以重新登入：</p>
+      <pre><code>gh auth logout
+gh auth login</code></pre>
+      <p>登入過程中看到「Authenticate Git with your GitHub credentials?」時選 Yes。</p>
+
+      <h3>問題 3：repo 建好了，但 push 到錯的 branch</h3>
+      <p>先確認本機分支名稱：</p>
+      <pre><code>git branch --show-current</code></pre>
+      <p>再確認 remote：</p>
+      <pre><code>git remote -v</code></pre>
+      <p>如果本機分支是 <code>main</code>，通常推：</p>
+      <pre><code>git push -u origin main</code></pre>
+      <p>如果本機分支是 <code>master</code>，通常推：</p>
+      <pre><code>git push -u origin master</code></pre>
+      <div class="note">
+        GitHub 現在新 repo 常見預設分支是 <code>main</code>。但 Git 本身不強制一定要叫 <code>main</code>；你的 repo 可以使用 <code>master</code>、<code>dev</code> 或其他名稱。重點是本機分支、遠端分支與預設分支要對得起來。
+      </div>
+
+      <h3>問題 4：我要用 Gitea，可以用 GitHub CLI 嗎？</h3>
+      <p>通常不適合。GitHub CLI 是針對 GitHub.com / GitHub Enterprise 的工具；Gitea 雖然也是 Git server 與協作平台，但它不是 GitHub。對 Gitea repo 進行版本控制時，主要仍使用 <code>git clone</code>、<code>git remote</code>、<code>git push</code>、<code>git pull</code>。</p>
+      <pre><code>git clone https://你的-gitea-server/user/repo.git
+cd repo
+git status
+git push</code></pre>
+
+      <h3>問題 5：我要先學 Git 還是 GitHub CLI？</h3>
+      <p>建議順序：</p>
+      <ol>
+        <li>先學 Git 基本：<code>status</code>、<code>add</code>、<code>commit</code>、<code>branch</code>、<code>merge</code>、<code>push</code>、<code>pull</code>。</li>
+        <li>再學 GitHub 基本：repo、issue、pull request、actions。</li>
+        <li>最後學 GitHub CLI：把 GitHub 網頁操作搬到命令列，提高效率。</li>
+      </ol>
+    </section>
+
+    <section id="summary">
+      <h2>結論</h2>
+      <p><span class="pill">Git</span> 是版本控制核心；<span class="pill">GitHub</span> 是雲端協作平台；<span class="pill">Gitea</span> 是可自架的 Git 服務；<span class="pill">GitHub CLI</span> 則是把 GitHub 的平台功能帶進命令列。</p>
+      <p>日常開發時可以這樣分工：版本變更用 <code>git</code>，GitHub 平台互動用 <code>gh</code>。熟悉後，你可以少開很多網頁，尤其在建立 repo、開 PR、看 issue、查 Actions 狀態時非常方便。</p>
+    </section>
+
+    <footer>
+      <p>參考來源：<a href="https://git-scm.com/" target="_blank" rel="noreferrer">Git 官方網站</a>、<a href="https://cli.github.com/" target="_blank" rel="noreferrer">GitHub CLI 官方網站</a>、<a href="https://github.com/cli/cli" target="_blank" rel="noreferrer">GitHub CLI GitHub repo</a>、<a href="https://docs.github.com/en/github-cli/github-cli/quickstart" target="_blank" rel="noreferrer">GitHub CLI Quickstart</a>、<a href="https://about.gitea.com/" target="_blank" rel="noreferrer">Gitea 官方網站</a>。</p>
+      <p>文件版本：2026-06-19</p>
+    </footer>
+  </div>
+</body>
+</html>
