@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Git 教學第二篇：用 GitHub Pages 搭建 Web 靜態網站</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --ink: #1f2328;
+      --muted: #59636e;
+      --line: #d0d7de;
+      --blue: #0969da;
+      --blue-soft: #ddf4ff;
+      --green-soft: #dafbe1;
+      --yellow-soft: #fff8c5;
+      --red-soft: #ffebe9;
+      --code-bg: #0d1117;
+      --code-ink: #e6edf3;
+      --purple: #8250df;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.75;
+    }
+    header {
+      background: radial-gradient(circle at top left, #8250df 0, #0969da 35%, #0d1117 78%);
+      color: white;
+      padding: 56px 24px 72px;
+    }
+    header .wrap, main {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.15;
+    }
+    .subtitle {
+      max-width: 900px;
+      font-size: 1.14rem;
+      opacity: .94;
+    }
+    main {
+      background: var(--paper);
+      margin-top: -36px;
+      padding: 32px 28px 72px;
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 14px 42px rgba(31, 35, 40, .09);
+    }
+    h2 {
+      margin-top: 46px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      color: #0d1117;
+    }
+    h3 { margin-top: 30px; color: #24292f; }
+    h4 { margin-top: 24px; }
+    a { color: var(--blue); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: .95em;
+      background: rgba(175, 184, 193, .22);
+      padding: .14em .36em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 12px;
+      border: 1px solid #30363d;
+      padding: 16px 18px;
+      overflow-x: auto;
+      line-height: 1.55;
+      margin: 14px 0 22px;
+    }
+    pre code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      font-size: .95rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: .96rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+    }
+    th {
+      background: #f6f8fa;
+      text-align: left;
+    }
+    .toc {
+      background: var(--blue-soft);
+      border: 1px solid #b6e3ff;
+      border-radius: 14px;
+      padding: 18px 22px;
+      margin: 22px 0 34px;
+    }
+    .toc ol { columns: 2; margin-bottom: 0; }
+    .callout {
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--blue);
+      border-radius: 11px;
+      background: #f6f8fa;
+      padding: 14px 16px;
+      margin: 18px 0;
+    }
+    .callout strong { display: inline-block; margin-bottom: 4px; }
+    .ok { background: var(--green-soft); border-left-color: #1a7f37; }
+    .warn { background: var(--yellow-soft); border-left-color: #bf8700; }
+    .danger { background: var(--red-soft); border-left-color: #cf222e; }
+    .purple { background: #fbefff; border-left-color: var(--purple); }
+    .steps { counter-reset: step; }
+    .step {
+      counter-increment: step;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 16px 0;
+      background: #fff;
+    }
+    .step h4 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+    .step h4::before {
+      content: "步驟 " counter(step) "：";
+      color: var(--blue);
+    }
+    .diagram {
+      background: #f6f8fa;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 16px 0 24px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+    .badge {
+      display: inline-block;
+      background: #f6f8fa;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .12rem .55rem;
+      font-size: .86rem;
+      color: var(--muted);
+      margin-left: .3rem;
+    }
+    .footer {
+      color: var(--muted);
+      font-size: .92rem;
+      border-top: 1px solid var(--line);
+      margin-top: 56px;
+      padding-top: 20px;
+    }
+    @media (max-width: 760px) {
+      header { padding: 40px 18px 58px; }
+      main { padding: 24px 18px 56px; }
+      .toc ol { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Git 教學第二篇：用 GitHub Pages 搭建 Web 靜態網站</h1>
+    <div class="subtitle">給資工系新生的實作課：把 HTML / CSS / JavaScript 放進 GitHub repo，透過 GitHub Pages 發布成可以公開瀏覽的靜態網站，並理解為什麼要設定 branch 與資料夾來源。</div>
+  </div>
+</header>
+
+<main>
+  <section class="toc">
+    <strong>本篇目標</strong>
+    <p>學完後，學生應該知道如何把一個 repo 變成網站、GitHub Pages 的發布來源是什麼、為什麼常見設定會選 <code>main</code> branch 與 <code>root</code> 或 <code>/docs</code> 資料夾。</p>
+    <ol>
+      <li><a href="#what">什麼是靜態網站？</a></li>
+      <li><a href="#pages">GitHub Pages 是什麼？</a></li>
+      <li><a href="#branch">為什麼要設定 Branch？</a></li>
+      <li><a href="#structure">建議專案結構</a></li>
+      <li><a href="#method-web">方法一：用 GitHub 網頁建立網站</a></li>
+      <li><a href="#method-cli">方法二：用命令列建立網站</a></li>
+      <li><a href="#settings">GitHub Pages 設定說明</a></li>
+      <li><a href="#update">網站更新流程</a></li>
+      <li><a href="#public-private">Public / Private 與網站可見性</a></li>
+      <li><a href="#common">常見問題</a></li>
+      <li><a href="#practice">練習題</a></li>
+    </ol>
+  </section>
+
+  <section id="what">
+    <h2>1. 什麼是靜態網站？</h2>
+    <p>靜態網站是指主要由 <code>HTML</code>、<code>CSS</code>、<code>JavaScript</code>、圖片與其他前端檔案組成的網站。瀏覽器直接下載這些檔案並顯示，不需要後端伺服器即時計算資料。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>類型</th>
+          <th>能不能用 GitHub Pages？</th>
+          <th>例子</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>純 HTML / CSS / JS</td>
+          <td>可以</td>
+          <td>個人首頁、課堂作品、作品集、活動頁</td>
+        </tr>
+        <tr>
+          <td>Markdown / Jekyll 網站</td>
+          <td>可以</td>
+          <td>技術筆記、文件網站、Blog</td>
+        </tr>
+        <tr>
+          <td>React / Vue 打包後的靜態檔</td>
+          <td>可以，但通常要先 build</td>
+          <td>前端專案的 <code>dist</code> 或 <code>build</code> 輸出</td>
+        </tr>
+        <tr>
+          <td>Node.js / Python / PHP 後端服務</td>
+          <td>不適合</td>
+          <td>需要資料庫登入、API server、即時後端邏輯</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout ok">
+      <strong>新生先記這句</strong>
+      <p>GitHub Pages 適合「前端靜態網站」，不適合拿來跑真正的後端程式。</p>
+    </div>
+  </section>
+
+  <section id="pages">
+    <h2>2. GitHub Pages 是什麼？</h2>
+    <p>GitHub Pages 是 GitHub 提供的靜態網站發布功能。你把網站檔案放在 repo 裡，再指定 GitHub Pages 要從哪個 branch、哪個資料夾讀取檔案，GitHub 就會幫你把它發布成一個網址。</p>
+
+    <div class="diagram">本機電腦
+  ↓ git add / commit / push
+GitHub Repository
+  ↓ GitHub Pages 讀取指定 branch + folder
+公開網站網址</div>
+
+    <p>常見網址格式：</p>
+    <pre><code>https://你的帳號.github.io/你的repo名稱/</code></pre>
+
+    <p>例如你的 GitHub 帳號是 <code>student123</code>，repo 名稱是 <code>my-first-site</code>，那網站可能會是：</p>
+    <pre><code>https://student123.github.io/my-first-site/</code></pre>
+
+    <h3>2.1 特殊情況：帳號首頁網站</h3>
+    <p>如果 repo 名稱剛好是：</p>
+    <pre><code>你的帳號.github.io</code></pre>
+    <p>那它通常會變成帳號首頁，例如：</p>
+    <pre><code>https://student123.github.io/</code></pre>
+    <p>這比較適合拿來做個人作品集首頁。一般課堂練習則建議用普通 repo，例如 <code>my-first-site</code>。</p>
+  </section>
+
+  <section id="branch">
+    <h2>3. 為什麼要設定 Branch？</h2>
+
+    <p>很多人第一次用 GitHub Pages 會卡在這裡：為什麼不是 repo 建好就自動變網站？為什麼還要去 Settings → Pages 選 branch？</p>
+
+    <div class="callout purple">
+      <strong>原因很簡單</strong>
+      <p>一個 repo 裡面可能有很多檔案，不一定全部都是網站要公開的內容。GitHub Pages 需要你明確告訴它：「請從哪個 branch、哪個資料夾拿檔案來當網站。」</p>
+    </div>
+
+    <h3>3.1 Branch 是什麼？</h3>
+    <p>branch 可以先簡單理解成「專案的一條版本線」。新手通常只會用到 <code>main</code> 這條主線。</p>
+
+    <div class="diagram">main branch
+├── index.html
+├── style.css
+└── app.js
+
+GitHub Pages 設定：
+Source: Deploy from a branch
+Branch: main
+Folder: /root
+
+結果：GitHub Pages 會從 main branch 的最上層資料夾讀取網站檔案。</div>
+
+    <h3>3.2 為什麼常選 main branch？</h3>
+    <p>因為 <code>main</code> 通常是 repo 的主要版本，也是新手最容易理解與維護的分支。對入門靜態網站來說，先把網站檔案直接放在 <code>main</code> branch 是最直覺的做法。</p>
+
+    <h3>3.3 Folder 選 root 或 /docs 是什麼意思？</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>選項</th>
+          <th>意思</th>
+          <th>適合情境</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>/root</code></td>
+          <td>repo 最外層資料夾</td>
+          <td>最簡單的 HTML / CSS / JS 小網站</td>
+        </tr>
+        <tr>
+          <td><code>/docs</code></td>
+          <td>repo 裡的 <code>docs</code> 資料夾</td>
+          <td>repo 同時有原始碼與文件網站時</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>本篇建議</strong>
+      <p>初學者先選 <code>main</code> + <code>/root</code>。等以後專案變複雜，再理解 <code>/docs</code>、<code>gh-pages</code> 或 GitHub Actions 部署。</p>
+    </div>
+  </section>
+
+  <section id="structure">
+    <h2>4. 建議專案結構</h2>
+
+    <h3>4.1 最小網站結構</h3>
+    <pre><code>my-first-site/
+├── index.html
+├── style.css
+└── script.js</code></pre>
+
+    <p>其中 <code>index.html</code> 很重要。多數靜態網站服務會把 <code>index.html</code> 當作首頁。</p>
+
+    <h3>4.2 有圖片時的結構</h3>
+    <pre><code>my-first-site/
+├── index.html
+├── style.css
+├── script.js
+└── images/
+    └── profile.jpg</code></pre>
+
+    <p>HTML 引用圖片時可以寫：</p>
+    <pre><code>&lt;img src="images/profile.jpg" alt="個人照片"&gt;</code></pre>
+
+    <h3>4.3 不建議的結構</h3>
+    <pre><code>my-first-site/
+└── web/
+    ├── index.html
+    ├── style.css
+    └── script.js</code></pre>
+
+    <p>如果 GitHub Pages 設定是 <code>main</code> + <code>/root</code>，但你的 <code>index.html</code> 被放在 <code>web/</code> 裡，首頁就可能找不到。新手先把 <code>index.html</code> 放在 repo 最外層最穩。</p>
+  </section>
+
+  <section id="method-web">
+    <h2>5. 方法一：用 GitHub 網頁建立靜態網站</h2>
+    <p>這個方法不用命令列，適合第一次示範 GitHub Pages 的概念。</p>
+
+    <div class="steps">
+      <div class="step">
+        <h4>建立新的 Public Repo</h4>
+        <p>到 GitHub 右上角按 <strong>+</strong> → <strong>New repository</strong>，建立一個 repo，例如：</p>
+        <pre><code>my-first-site</code></pre>
+        <p>Visibility 建議先選 <strong>Public</strong>，因為靜態網站本來就是要公開瀏覽。</p>
+      </div>
+
+      <div class="step">
+        <h4>新增 index.html</h4>
+        <p>進入 repo 後按 <strong>Add file</strong> → <strong>Create new file</strong>，檔名輸入：</p>
+        <pre><code>index.html</code></pre>
+        <p>內容輸入：</p>
+        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-Hant"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;我的第一個 GitHub Pages 網站&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hello GitHub Pages!&lt;/h1&gt;
+  &lt;p&gt;這是我用 Git 和 GitHub 建立的第一個靜態網站。&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+
+      <div class="step">
+        <h4>Commit 新檔案</h4>
+        <p>在頁面下方 commit message 寫：</p>
+        <pre><code>Add website homepage</code></pre>
+        <p>然後按 <strong>Commit changes</strong>。</p>
+      </div>
+
+      <div class="step">
+        <h4>啟用 GitHub Pages</h4>
+        <p>到 repo 的 <strong>Settings</strong> → <strong>Pages</strong>。</p>
+        <p>在 <strong>Build and deployment</strong> 區塊選：</p>
+        <ul>
+          <li>Source：<code>Deploy from a branch</code></li>
+          <li>Branch：<code>main</code></li>
+          <li>Folder：<code>/root</code></li>
+        </ul>
+        <p>按 <strong>Save</strong>。</p>
+      </div>
+
+      <div class="step">
+        <h4>等待發布完成</h4>
+        <p>GitHub Pages 通常需要一點時間部署。完成後，Settings → Pages 會顯示網站網址。</p>
+      </div>
+    </div>
+
+    <div class="callout ok">
+      <strong>這個設定代表什麼？</strong>
+      <p><code>main</code> + <code>/root</code> 的意思是：GitHub Pages 會從 <code>main</code> branch 的 repo 最上層讀取 <code>index.html</code> 作為網站首頁。</p>
+    </div>
+  </section>
+
+  <section id="method-cli">
+    <h2>6. 方法二：用命令列建立靜態網站</h2>
+    <p>這比較接近實際開發流程：在本機寫網站，commit 後 push 到 GitHub，再由 GitHub Pages 發布。</p>
+
+    <h3>6.1 建立資料夾</h3>
+    <pre><code>mkdir my-first-site
+cd my-first-site</code></pre>
+
+    <h3>6.2 建立 index.html</h3>
+    <p>你可以用 VS Code 建立檔案，也可以先用以下方式快速建立：</p>
+    <pre><code>echo ^&lt;h1^&gt;Hello GitHub Pages^&lt;/h1^&gt; &gt; index.html</code></pre>
+
+    <p>若使用 Git Bash，也可以寫：</p>
+    <pre><code>echo "&lt;h1&gt;Hello GitHub Pages&lt;/h1&gt;" &gt; index.html</code></pre>
+
+    <h3>6.3 初始化 Git 並 commit</h3>
+    <pre><code>git init
+git add .
+git commit -m "Add initial static website"</code></pre>
+
+    <h3>6.4 連接 GitHub Repo</h3>
+    <p>先在 GitHub 建立一個空 repo，例如 <code>my-first-site</code>，不要勾 README，避免第一次 push 時產生版本差異。</p>
+
+    <pre><code>git branch -M main
+git remote add origin https://github.com/你的帳號/my-first-site.git
+git push -u origin main</code></pre>
+
+    <h3>6.5 到 GitHub 啟用 Pages</h3>
+    <p>進入 repo → <strong>Settings</strong> → <strong>Pages</strong>，設定：</p>
+    <pre><code>Source: Deploy from a branch
+Branch: main
+Folder: /root</code></pre>
+
+    <p>儲存後等待發布完成。</p>
+  </section>
+
+  <section id="settings">
+    <h2>7. GitHub Pages 設定說明：為什麼這樣設？</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>設定項目</th>
+          <th>建議值</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Source</td>
+          <td><code>Deploy from a branch</code></td>
+          <td>對入門靜態網站最簡單。只要 push 到指定 branch，GitHub 就會自動發布。</td>
+        </tr>
+        <tr>
+          <td>Branch</td>
+          <td><code>main</code></td>
+          <td>main 是主要開發線。新手先不需要額外建立 <code>gh-pages</code> branch。</td>
+        </tr>
+        <tr>
+          <td>Folder</td>
+          <td><code>/root</code></td>
+          <td>網站檔案直接放 repo 最外層，最容易理解，也最不容易找不到首頁。</td>
+        </tr>
+        <tr>
+          <td>首頁檔名</td>
+          <td><code>index.html</code></td>
+          <td>多數網站伺服器與靜態網站平台會把 index.html 當作預設首頁。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>7.1 什麼時候會用 /docs？</h3>
+    <p>當 repo 主要是程式專案，但你只想把文件網站公開時，可以把網站放在 <code>/docs</code>。</p>
+
+    <pre><code>my-project/
+├── src/
+│   └── main.py
+├── tests/
+│   └── test_main.py
+└── docs/
+    ├── index.html
+    └── style.css</code></pre>
+
+    <p>此時 GitHub Pages 設定可以選：</p>
+    <pre><code>Branch: main
+Folder: /docs</code></pre>
+
+    <p>意思是：程式碼仍在 repo 裡，但網站只從 <code>docs</code> 資料夾發布。</p>
+
+    <h3>7.2 什麼時候會用 gh-pages branch？</h3>
+    <p><code>gh-pages</code> 是很多前端專案或早期教學常見的發布分支。概念是把「原始碼」和「要發布的網站成品」分開。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>分支</th>
+          <th>用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>main</code></td>
+          <td>放原始碼，例如 React / Vue 專案原始碼</td>
+        </tr>
+        <tr>
+          <td><code>gh-pages</code></td>
+          <td>放 build 後的靜態網站成品</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>但對剛學 HTML / CSS / JS 的學生來說，先不要把流程弄太複雜。第一階段建議使用 <code>main</code> + <code>/root</code>。</p>
+  </section>
+
+  <section id="update">
+    <h2>8. 網站更新流程</h2>
+
+    <p>網站不是只發布一次。之後你修改 HTML、CSS 或 JS 後，要重新 commit 並 push。</p>
+
+    <h3>8.1 日常更新流程</h3>
+    <pre><code># 查看修改狀態
+git status
+
+# 加入修改
+git add .
+
+# 建立 commit
+git commit -m "Update homepage layout"
+
+# 上傳到 GitHub
+git push</code></pre>
+
+    <p>push 後，GitHub Pages 會重新部署。等部署完成，重新整理網站就會看到新版本。</p>
+
+    <h3>8.2 常見 commit message</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>修改內容</th>
+          <th>建議 commit message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>新增首頁</td>
+          <td><code>Add homepage</code></td>
+        </tr>
+        <tr>
+          <td>調整版面</td>
+          <td><code>Update homepage layout</code></td>
+        </tr>
+        <tr>
+          <td>新增 CSS</td>
+          <td><code>Add site styles</code></td>
+        </tr>
+        <tr>
+          <td>修正圖片路徑</td>
+          <td><code>Fix image path</code></td>
+        </tr>
+        <tr>
+          <td>補上專案說明</td>
+          <td><code>Update README with website URL</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>GitHub Pages 的觀念</strong>
+      <p>不是你在本機改完就會上線，而是要 commit + push 到 GitHub，GitHub Pages 才有機會拿到新檔案並重新發布。</p>
+    </div>
+  </section>
+
+  <section id="public-private">
+    <h2>9. Public / Private 與網站可見性</h2>
+
+    <p>GitHub Pages 發布出來的網站，本質上是拿來被瀏覽器公開讀取的。因此學生應該養成一個觀念：只要是發布成網站的內容，就要假設別人可能看得到。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Repo 類型</th>
+          <th>適合情境</th>
+          <th>注意事項</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Public Repo</td>
+          <td>作品集、靜態網頁練習、課堂展示</td>
+          <td>repo 與網站內容都公開，適合新手練習 GitHub Pages。</td>
+        </tr>
+        <tr>
+          <td>Private Repo</td>
+          <td>未公開草稿、內部文件、私人練習</td>
+          <td>即使 repo 是 private，也不要把敏感資料放進要發布的網站內容。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout danger">
+      <strong>不要放進網站的東西</strong>
+      <ul>
+        <li>密碼</li>
+        <li>API Key</li>
+        <li>資料庫連線字串</li>
+        <li>學生個資或真實成績資料</li>
+        <li>未授權公開的圖片、影片、文件</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="common">
+    <h2>10. 常見問題與排除</h2>
+
+    <h3>10.1 網站打開是 404</h3>
+    <p>常見原因：</p>
+    <ul>
+      <li>GitHub Pages 還沒部署完成。</li>
+      <li>沒有 <code>index.html</code>。</li>
+      <li><code>index.html</code> 沒放在設定的資料夾中。</li>
+      <li>Settings → Pages 的 branch 或 folder 選錯。</li>
+      <li>repo 名稱或網址打錯。</li>
+    </ul>
+
+    <h3>10.2 CSS 沒有套用</h3>
+    <p>通常是路徑錯誤。假設結構是：</p>
+    <pre><code>my-first-site/
+├── index.html
+└── style.css</code></pre>
+    <p>HTML 應該寫：</p>
+    <pre><code>&lt;link rel="stylesheet" href="style.css"&gt;</code></pre>
+
+    <p>如果結構是：</p>
+    <pre><code>my-first-site/
+├── index.html
+└── css/
+    └── style.css</code></pre>
+    <p>HTML 應該寫：</p>
+    <pre><code>&lt;link rel="stylesheet" href="css/style.css"&gt;</code></pre>
+
+    <h3>10.3 圖片不見</h3>
+    <p>注意大小寫。Windows 對檔名大小寫通常比較寬鬆，但網站部署到伺服器後，<code>Profile.jpg</code> 和 <code>profile.jpg</code> 可能會被視為不同檔案。</p>
+
+    <pre><code>&lt;!-- 檔名是 profile.jpg，就不要寫成 Profile.JPG --&gt;
+&lt;img src="images/profile.jpg" alt="profile"&gt;</code></pre>
+
+    <h3>10.4 更新後網站還是舊的</h3>
+    <p>可能原因：</p>
+    <ul>
+      <li>你忘記 push。</li>
+      <li>GitHub Pages 還在部署。</li>
+      <li>瀏覽器快取還沒更新，可以按 <span class="badge">Ctrl + F5</span> 強制重新整理。</li>
+      <li>你改的是另一個 branch，不是 Pages 指定的 branch。</li>
+    </ul>
+
+    <h3>10.5 我可以用 GitHub Pages 做登入系統嗎？</h3>
+    <p>不建議。GitHub Pages 不會替你跑後端伺服器，也不適合直接處理帳密登入、資料庫寫入或金流。它比較適合前端展示、文件、作品集與靜態頁面。</p>
+  </section>
+
+  <section id="practice">
+    <h2>11. 練習題：做一個自己的第一個靜態網站</h2>
+
+    <h3>練習 A：個人介紹頁</h3>
+    <ol>
+      <li>建立 repo：<code>my-profile-site</code>。</li>
+      <li>建立 <code>index.html</code>。</li>
+      <li>內容包含姓名、科系、目前學習的程式語言。</li>
+      <li>啟用 GitHub Pages：<code>main</code> + <code>/root</code>。</li>
+      <li>把網站網址貼到 README。</li>
+    </ol>
+
+    <h3>練習 B：三頁式小網站</h3>
+    <p>建立以下結構：</p>
+    <pre><code>my-school-project/
+├── index.html
+├── about.html
+├── projects.html
+└── style.css</code></pre>
+
+    <p>首頁加入連結：</p>
+    <pre><code>&lt;nav&gt;
+  &lt;a href="index.html"&gt;首頁&lt;/a&gt;
+  &lt;a href="about.html"&gt;關於我&lt;/a&gt;
+  &lt;a href="projects.html"&gt;作品&lt;/a&gt;
+&lt;/nav&gt;</code></pre>
+
+    <p>至少做三次 commit：</p>
+    <pre><code>git commit -m "Add homepage"
+git commit -m "Add about and projects pages"
+git commit -m "Add basic site styles"</code></pre>
+
+    <h3>11.1 完成標準</h3>
+    <ul>
+      <li>GitHub repo 看得到所有檔案。</li>
+      <li>Settings → Pages 顯示網站網址。</li>
+      <li>網站打開不是 404。</li>
+      <li>首頁、CSS、連結都正常。</li>
+      <li>commit message 看得出每次修改目的。</li>
+    </ul>
+  </section>
+
+  <section id="summary">
+    <h2>12. 本篇重點整理</h2>
+    <ul>
+      <li>GitHub Pages 是靜態網站發布功能。</li>
+      <li>它需要你指定發布來源：branch + folder。</li>
+      <li>新手最推薦：<code>main</code> branch + <code>/root</code> folder。</li>
+      <li><code>index.html</code> 是首頁，建議放 repo 最外層。</li>
+      <li>修改網站後要 <code>git add</code>、<code>git commit</code>、<code>git push</code>。</li>
+      <li>網站上線後，公開內容不要放密碼、token、個資或未授權素材。</li>
+    </ul>
+  </section>
+
+  <section class="footer">
+    <h2>參考資料</h2>
+    <ul>
+      <li>GitHub Docs：About GitHub Pages：<a href="https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages" target="_blank" rel="noopener">https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages</a></li>
+      <li>GitHub Docs：Quickstart for GitHub Pages：<a href="https://docs.github.com/pages/quickstart" target="_blank" rel="noopener">https://docs.github.com/pages/quickstart</a></li>
+      <li>GitHub Docs：Configuring a publishing source for your GitHub Pages site：<a href="https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site" target="_blank" rel="noopener">https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site</a></li>
+      <li>GitHub Docs：Creating a GitHub Pages site：<a href="https://docs.github.com/articles/creating-project-pages-manually" target="_blank" rel="noopener">https://docs.github.com/articles/creating-project-pages-manually</a></li>
+    </ul>
+    <p>文件版本：2026-06-19。適用對象：資工系新生、第一次接觸 GitHub Pages 與靜態網站部署的學生。</p>
+  </section>
+</main>
+</body>
+</html>
