@@ -190,6 +190,7 @@
     <ol>
       <li><a href="#what">什麼是靜態網站？</a></li>
       <li><a href="#pages">GitHub Pages 是什麼？</a></li>
+      <li><a href="#git-vs-platform">Git、GitHub、Gitea 是什麼關係？</a></li>
       <li><a href="#branch">為什麼要設定 Branch？</a></li>
       <li><a href="#structure">建議專案結構</a></li>
       <li><a href="#method-web">方法一：用 GitHub 網頁建立網站</a></li>
@@ -269,8 +270,180 @@ GitHub Repository
     <p>這比較適合拿來做個人作品集首頁。一般課堂練習則建議用普通 repo，例如 <code>my-first-site</code>。</p>
   </section>
 
+
+  <section id="git-vs-platform">
+    <h2>3. Git、GitHub、Gitea 是什麼關係？</h2>
+
+    <p>在教學生使用 GitHub Pages 之前，最好先分清楚：<strong>Git 不是 GitHub，GitHub 也不是 Git 本身</strong>。</p>
+
+    <div class="callout purple">
+      <strong>最簡單的比喻</strong>
+      <p><strong>Git 是版本控制工具</strong>，負責記錄檔案修改歷史；<strong>GitHub / GitLab / Gitea 是放 Git repo 的平台</strong>，負責提供遠端倉庫、網頁介面、權限管理、協作功能。</p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>名稱</th>
+          <th>它是什麼？</th>
+          <th>通常負責什麼？</th>
+          <th>可以自己架設嗎？</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Git</td>
+          <td>分散式版本控制系統</td>
+          <td>本機版本紀錄、commit、branch、merge、push、pull</td>
+          <td>Git 本身是工具，可以安裝在自己的電腦或伺服器</td>
+        </tr>
+        <tr>
+          <td>GitHub</td>
+          <td>雲端 Git 代管平台</td>
+          <td>遠端 repo、網頁瀏覽程式碼、issue、pull request、GitHub Pages、Actions</td>
+          <td>一般使用 github.com；企業版另有 GitHub Enterprise</td>
+        </tr>
+        <tr>
+          <td>Gitea</td>
+          <td>可自架的 Git 服務</td>
+          <td>遠端 repo、帳號權限、網頁介面、code review、issue、CI/CD 等</td>
+          <td>可以，例如安裝在 NAS、Docker、家用伺服器或公司內網</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>3.1 Git 是本體：沒有 GitHub 也可以用 Git</h3>
+    <p>只要電腦有安裝 Git，就可以在本機資料夾做版本控制：</p>
+
+    <pre><code>git init
+git add .
+git commit -m "Add first version"</code></pre>
+
+    <p>這些動作即使沒有 GitHub、沒有網路，也可以完成。因為 commit 是先記錄在本機 repo 裡。</p>
+
+    <div class="diagram">你的電腦
+└── 專案資料夾
+    └── .git/
+        └── commit 歷史紀錄
+
+這一層只需要 Git，不需要 GitHub。</div>
+
+    <h3>3.2 GitHub / Gitea 是遠端平台：讓 repo 可以同步與分享</h3>
+    <p>當你想把本機 repo 備份到遠端、換電腦同步、或讓其他人協作時，就會設定 remote。</p>
+
+    <pre><code>git remote add origin https://github.com/你的帳號/my-project.git
+git push -u origin main</code></pre>
+
+    <p>如果遠端平台是你 NAS 上的 Gitea，概念也一樣，只是網址不同，例如：</p>
+
+    <pre><code>git remote add origin http://你的NAS位址:3000/帳號/my-project.git
+git push -u origin main</code></pre>
+
+    <p>或如果你的 Gitea 有設定 HTTPS / 網域，可能會像：</p>
+
+    <pre><code>git remote add origin https://git.example.com/帳號/my-project.git
+git push -u origin main</code></pre>
+
+    <div class="callout ok">
+      <strong>重點</strong>
+      <p><code>git add</code>、<code>git commit</code> 是 Git 的本機操作；<code>git push</code>、<code>git pull</code> 則會碰到遠端平台，例如 GitHub 或 Gitea。</p>
+    </div>
+
+    <h3>3.3 同一個本機 repo 可以推到不同遠端</h3>
+    <p>Git 的 remote 只是「遠端倉庫位置」。所以同一個專案，理論上可以推到 GitHub，也可以推到你的 Gitea。</p>
+
+    <p>查看目前遠端：</p>
+    <pre><code>git remote -v</code></pre>
+
+    <p>可能看到 GitHub：</p>
+    <pre><code>origin  https://github.com/你的帳號/my-project.git (fetch)
+origin  https://github.com/你的帳號/my-project.git (push)</code></pre>
+
+    <p>也可能看到 Gitea：</p>
+    <pre><code>origin  http://你的NAS位址:3000/帳號/my-project.git (fetch)
+origin  http://你的NAS位址:3000/帳號/my-project.git (push)</code></pre>
+
+    <p>如果想改 remote URL：</p>
+    <pre><code>git remote set-url origin 新的repo網址</code></pre>
+
+    <p>如果想同時保留 GitHub 與 Gitea，也可以另外新增一個 remote 名稱：</p>
+
+    <pre><code>git remote add gitea http://你的NAS位址:3000/帳號/my-project.git
+
+# 推到 GitHub
+git push origin main
+
+# 推到 Gitea
+git push gitea main</code></pre>
+
+    <div class="callout warn">
+      <strong>給新手的建議</strong>
+      <p>初學階段先用一個 remote 就好，例如 <code>origin</code> 指向 GitHub。等觀念熟了，再示範同一個 repo 同步到 GitHub 與 Gitea。</p>
+    </div>
+
+    <h3>3.4 GitHub Pages 是 GitHub 額外提供的網站發布功能</h3>
+    <p>這一篇教的是 GitHub Pages，所以必須使用 GitHub 的 Pages 功能。你的 NAS 上的 Gitea 可以代管 Git repo，但它本身不等於 GitHub Pages。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>需求</th>
+          <th>GitHub</th>
+          <th>NAS 上的 Gitea</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>保存 Git repo</td>
+          <td>可以</td>
+          <td>可以</td>
+        </tr>
+        <tr>
+          <td>用瀏覽器看程式碼</td>
+          <td>可以</td>
+          <td>可以</td>
+        </tr>
+        <tr>
+          <td>多人協作、權限管理</td>
+          <td>可以</td>
+          <td>可以</td>
+        </tr>
+        <tr>
+          <td>GitHub Pages 靜態網站發布</td>
+          <td>可以，這是 GitHub 功能</td>
+          <td>不是 GitHub Pages；若要發布網站，通常要另外搭 Nginx、Apache、Caddy、Cloudflare Pages、Netlify、Vercel 或 NAS Web Station 等服務</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>3.5 給學生的心智模型</h3>
+    <div class="diagram">Git：版本控制引擎
+  ├── 在本機 commit
+  ├── 記錄誰改了什麼
+  └── 可以 push / pull 到遠端
+
+GitHub：雲端 Git 平台
+  ├── 放遠端 repo
+  ├── 管理 issue / PR / Actions
+  └── 提供 GitHub Pages 發布靜態網站
+
+Gitea：自架 Git 平台
+  ├── 放遠端 repo
+  ├── 可裝在 NAS / Docker / 內網
+  └── 適合私人、家庭、公司內部代管程式碼</div>
+
+    <p>所以可以這樣總結：</p>
+    <ul>
+      <li><strong>Git 是技術標準與工具。</strong></li>
+      <li><strong>GitHub 是使用 Git 的雲端平台。</strong></li>
+      <li><strong>Gitea 是可以自己架設的 Git 平台。</strong></li>
+      <li><strong>GitHub Pages 是 GitHub 額外提供的靜態網站發布功能，不是 Git 本身的功能。</strong></li>
+    </ul>
+  </section>
+
+
   <section id="branch">
-    <h2>3. 為什麼要設定 Branch？</h2>
+    <h2>4. 為什麼要設定 Branch？</h2>
 
     <p>很多人第一次用 GitHub Pages 會卡在這裡：為什麼不是 repo 建好就自動變網站？為什麼還要去 Settings → Pages 選 branch？</p>
 
@@ -327,7 +500,7 @@ Folder: /root
   </section>
 
   <section id="structure">
-    <h2>4. 建議專案結構</h2>
+    <h2>5. 建議專案結構</h2>
 
     <h3>4.1 最小網站結構</h3>
     <pre><code>my-first-site/
@@ -359,7 +532,7 @@ Folder: /root
   </section>
 
   <section id="method-web">
-    <h2>5. 方法一：用 GitHub 網頁建立靜態網站</h2>
+    <h2>6. 方法一：用 GitHub 網頁建立靜態網站</h2>
     <p>這個方法不用命令列，適合第一次示範 GitHub Pages 的概念。</p>
 
     <div class="steps">
@@ -421,7 +594,7 @@ Folder: /root
   </section>
 
   <section id="method-cli">
-    <h2>6. 方法二：用命令列建立靜態網站</h2>
+    <h2>7. 方法二：用命令列建立靜態網站</h2>
     <p>這比較接近實際開發流程：在本機寫網站，commit 後 push 到 GitHub，再由 GitHub Pages 發布。</p>
 
     <h3>6.1 建立資料夾</h3>
@@ -466,7 +639,7 @@ Folder: /root</code></pre>
 
 
   <section id="auth">
-    <h2>7. 第一次 Push 的 GitHub 認證與 Branch 設定</h2>
+    <h2>8. 第一次 Push 的 GitHub 認證與 Branch 設定</h2>
 
     <p>第一次在 Windows 執行 <code>git push</code> 時，學生最容易卡在兩件事：</p>
     <ol>
@@ -496,7 +669,39 @@ commit 上傳到 GitHub repo
 GitHub Pages 讀取指定 branch / folder 並重新部署網站</div>
 
     <h3>7.2 Windows 新手建議：用 Git Credential Manager 登入</h3>
-    <p>在 Windows 安裝 <strong>Git for Windows</strong> 時，通常會一起安裝 Git Credential Manager。第一次 <code>git push</code> 時，它可能會跳出 GitHub 登入視窗或開啟瀏覽器要求授權。</p>
+    <p>在 Windows 安裝 <strong>Git for Windows</strong> 時，通常會一起安裝或搭配 Git Credential Manager。第一次 <code>git push</code> 時，它可能會跳出 GitHub 登入視窗或開啟瀏覽器要求授權。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>工具</th>
+          <th>指令</th>
+          <th>是否通常隨 Git for Windows 安裝？</th>
+          <th>用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Git for Windows</td>
+          <td><code>git</code></td>
+          <td>是</td>
+          <td>版本控制本體，例如 <code>git add</code>、<code>git commit</code>、<code>git push</code>。</td>
+        </tr>
+        <tr>
+          <td>Git Credential Manager</td>
+          <td>通常由 <code>git</code> 背後呼叫</td>
+          <td>通常是</td>
+          <td>協助 HTTPS push/fetch 時跳出瀏覽器登入，並安全保存 GitHub 憑證。</td>
+        </tr>
+        <tr>
+          <td>GitHub CLI</td>
+          <td><code>gh</code></td>
+          <td>否，需要另外安裝</td>
+          <td>GitHub 官方命令列工具，可用 <code>gh auth login</code>、<code>gh auth status</code> 管理 GitHub 登入狀態。</td>
+        </tr>
+      </tbody>
+    </table>
+
 
     <p>常見流程如下：</p>
     <ol>
@@ -567,16 +772,16 @@ GitHub Pages 讀取指定 branch / folder 並重新部署網站</div>
         </tr>
         <tr>
           <td>未來要更正式開發</td>
-          <td>可以學 SSH key 或 GitHub CLI。新手第一階段先用 HTTPS + Git Credential Manager 即可。</td>
+          <td>可以學 SSH key 或另外安裝 GitHub CLI。新手第一階段先用 HTTPS + Git Credential Manager 即可。</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>7.5 使用 GitHub CLI 登入</h3>
-    <p>GitHub CLI 是 GitHub 官方命令列工具。安裝後可以用以下指令登入：</p>
+    <h3>7.5 可選方式：使用 GitHub CLI 登入</h3>
+    <p><strong>GitHub CLI 需要另外安裝</strong>。它的指令是 <code>gh</code>，不是 Git for Windows 內建的 <code>git</code> 指令。安裝後可以用以下指令登入：</p>
     <pre><code>gh auth login</code></pre>
 
-    <p>新手可以依照畫面選擇：</p>
+    <p>如果你有另外安裝 GitHub CLI，新手可以依照畫面選擇：</p>
     <ul>
       <li>GitHub.com</li>
       <li>HTTPS</li>
@@ -602,6 +807,130 @@ git branch -M main</code></pre>
 
     <p><code>git branch -M main</code> 的意思是：把目前本機 branch 重新命名成 <code>main</code>。這不是進入進階多人協作，也不是要求學生現在就學 branch flow，只是把主線名稱統一。</p>
 
+    <div class="callout ok">
+      <strong><code>git branch -M main</code> 是必須的嗎？</strong>
+      <p>不是每一種情況都絕對必須，但<strong>如果你目前在 <code>master</code>，而 GitHub repo 或 GitHub Pages 預設使用 <code>main</code>，就很建議執行</strong>。它的作用是把本機目前這條 branch 直接改名成 <code>main</code>，讓本機和遠端名稱一致。</p>
+    </div>
+
+    <h4><code>git branch -M main</code> 拆開看是什麼意思？</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>部分</th>
+          <th>意思</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>git branch</code></td>
+          <td>管理本機 branch 的指令。</td>
+        </tr>
+        <tr>
+          <td><code>-M</code></td>
+          <td>強制重新命名目前 branch。即使 <code>main</code> 已存在，也會以強制方式處理。</td>
+        </tr>
+        <tr>
+          <td><code>main</code></td>
+          <td>新的 branch 名稱。現在 GitHub 新 repo 常見預設 branch 名稱是 <code>main</code>。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>什麼情況需要執行？</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>目前情況</th>
+          <th>要不要執行 <code>git branch -M main</code>？</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>git status</code> 顯示 <code>On branch master</code></td>
+          <td>建議執行</td>
+          <td>把本機 <code>master</code> 改成 <code>main</code>，避免 push 到錯的 branch，或 GitHub Pages 讀不到。</td>
+        </tr>
+        <tr>
+          <td><code>git status</code> 已經顯示 <code>On branch main</code></td>
+          <td>不用執行</td>
+          <td>本機已經是 <code>main</code>，不需要再改名。</td>
+        </tr>
+        <tr>
+          <td>你是從 GitHub clone 下來的 repo</td>
+          <td>通常不用</td>
+          <td>clone 時通常會自動跟著遠端 repo 的預設 branch。</td>
+        </tr>
+        <tr>
+          <td>你是本機從零開始 <code>git init</code></td>
+          <td>建議執行，或直接用 <code>git init -b main</code></td>
+          <td>避免本機初始 branch 叫 <code>master</code>，但 GitHub 預設是 <code>main</code>。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>判斷方式很簡單，先看目前 branch：</p>
+    <pre><code>git status
+git branch</code></pre>
+
+    <p>如果看到：</p>
+    <pre><code>On branch master</code></pre>
+
+    <p>或：</p>
+    <pre><code>* master</code></pre>
+
+    <p>就可以執行：</p>
+    <pre><code>git branch -M main</code></pre>
+
+    <p>再確認一次：</p>
+    <pre><code>git status
+git branch</code></pre>
+
+    <p>應該會變成：</p>
+    <pre><code>On branch main</code></pre>
+
+    <p>或：</p>
+    <pre><code>* main</code></pre>
+
+    <h4>為什麼改成 <code>main</code> 後才跳出 GitHub 認證？</h4>
+    <p>這通常代表前一次 <code>git push</code> 還沒真正進入「對 GitHub 寫入遠端 branch」的認證流程，就已經因為本機 branch 名稱或推送目標不一致而失敗。</p>
+
+    <p>例如你本機在 <code>master</code>：</p>
+    <pre><code>On branch master</code></pre>
+
+    <p>但你執行的是：</p>
+    <pre><code>git push -u origin main</code></pre>
+
+    <p>這時 Git 可能會找不到本機的 <code>main</code>，或無法正確建立本機 branch 與遠端 branch 的追蹤關係。當你執行：</p>
+    <pre><code>git branch -M main</code></pre>
+
+    <p>本機目前 branch 就被改名成 <code>main</code>。接著再執行：</p>
+    <pre><code>git push -u origin main</code></pre>
+
+    <p>Git 這時就能明確知道：「我要把本機 <code>main</code> 推到遠端 <code>origin/main</code>。」因此流程會正式連到 GitHub，接著才觸發瀏覽器登入或 Git Credential Manager 認證。</p>
+
+    <div class="callout warn">
+      <strong><code>main</code> 是 GitHub Pages 的建議標準，不是 Git 本體的硬性規定</strong>
+      <p>Git 本身不強制你的主要 branch 一定要叫 <code>main</code>。它可以叫 <code>master</code>、<code>dev</code>、<code>website</code>，甚至其他名稱。但 GitHub 新 repo 與 GitHub Pages 教學通常以 <code>main</code> 作為預設主分支。為了讓本機、GitHub repo、GitHub Pages 發布來源一致，新手教學建議統一使用 <code>main</code>。</p>
+    </div>
+
+    <h4>什麼時候 <code>main</code> 幾乎是必要的？</h4>
+    <p>如果 GitHub Pages 設定是：</p>
+    <pre><code>Source: Deploy from a branch
+Branch: main
+Folder: /root</code></pre>
+
+    <p>那你的網站檔案就應該 push 到遠端的 <code>main</code> branch。否則你可能把檔案推到 <code>master</code>，但 GitHub Pages 卻在讀 <code>main</code>，網站就不會更新。</p>
+
+    <p>所以更精確地說：</p>
+    <ul>
+      <li><code>main</code> 不是 Git 的硬性規定。</li>
+      <li>但如果 GitHub repo 預設 branch 是 <code>main</code>，GitHub Pages 也設定讀 <code>main</code>，那本機就建議也統一成 <code>main</code>。</li>
+      <li><code>git branch -M main</code> 的作用，就是把本機目前 branch 名稱整理成 <code>main</code>。</li>
+    </ul>
+
+
+
     <h4>檢查目前在哪個 branch</h4>
     <pre><code>git branch</code></pre>
 
@@ -620,7 +949,140 @@ git branch -M main</code></pre>
 
     <p>所以不是每次都一定要手動設定 branch；只是如果你是從本機 <code>git init</code> 開始建立專案，為了避免 <code>master</code> / <code>main</code> 不一致，建議一開始就明確設定。</p>
 
-    <h3>7.8 本篇推薦的新手完整指令</h3>
+
+    <h3>7.8 如何檢查目前是否已經認證？</h3>
+
+    <p>如果學生問：「我怎麼知道這台電腦已經登入 GitHub，可以 push 了？」可以依照下面順序檢查。</p>
+
+    <h4>第一步：確認 remote 是 HTTPS 還是 SSH</h4>
+    <p>在專案資料夾執行：</p>
+    <pre><code>git remote -v</code></pre>
+
+    <p>如果看到類似：</p>
+    <pre><code>origin  https://github.com/你的帳號/你的repo.git (fetch)
+origin  https://github.com/你的帳號/你的repo.git (push)</code></pre>
+
+    <p>代表這個 repo 使用的是 <strong>HTTPS</strong> 連線。Windows 新手大多會走這種方式，通常會透過 Git Credential Manager、GitHub CLI 或 Personal Access Token 完成認證。</p>
+
+    <p>如果看到類似：</p>
+    <pre><code>origin  git@github.com:你的帳號/你的repo.git (fetch)
+origin  git@github.com:你的帳號/你的repo.git (push)</code></pre>
+
+    <p>代表這個 repo 使用的是 <strong>SSH key</strong> 認證。</p>
+
+    <h4>第二步：檢查 Git 是否啟用 Credential Manager</h4>
+    <p>如果你使用 HTTPS，可以執行：</p>
+    <pre><code>git config --global credential.helper</code></pre>
+
+    <p>如果看到：</p>
+    <pre><code>manager</code></pre>
+
+    <p>或：</p>
+    <pre><code>manager-core</code></pre>
+
+    <p>代表 Git 會透過 Windows 的 Git Credential Manager 管理 GitHub 登入。</p>
+
+    <div class="callout warn">
+      <strong>注意</strong>
+      <p>這只代表 Git 有啟用憑證管理工具，不代表你一定已經登入成功。真正是否能存取 repo，還要用 <code>git fetch</code> 或 <code>git push</code> 測試。</p>
+    </div>
+
+    <h4>第三步：用 git fetch 測試是否能讀取 repo</h4>
+    <pre><code>git fetch</code></pre>
+
+    <p>如果沒有錯誤，通常代表你至少能讀取這個 repo。若是 Private repo，這通常也代表你的認證有成功。</p>
+
+    <p>如果出現下面這類訊息，就比較像認證或權限問題：</p>
+    <pre><code>Authentication failed
+Invalid username or password
+Permission denied
+Repository not found
+403</code></pre>
+
+    <p>但要注意：<code>git fetch</code> 成功只代表讀取權限正常，不一定代表你一定有 push 權限。最終能不能寫入，仍要看 <code>git push</code>。</p>
+
+    <h4>第四步：如果有另外安裝 GitHub CLI，才檢查 gh 登入狀態</h4>
+    <p><code>gh auth status</code> 不是 Git 內建指令，必須先另外安裝 GitHub CLI 才能使用。如果沒有安裝，這一步可以跳過。</p>
+    <pre><code>gh auth status</code></pre>
+
+    <p>如果已登入，會看到類似：</p>
+    <pre><code>Logged in to github.com account 你的帳號
+Git operations protocol: https
+Token: *******************</code></pre>
+
+    <p>如果已安裝 GitHub CLI 但尚未登入，可以執行：</p>
+    <pre><code>gh auth login</code></pre>
+
+    <p>然後依照畫面選擇 GitHub.com、HTTPS、Login with a web browser。</p>
+
+    <h4>第五步：Windows 圖形介面檢查</h4>
+    <p>可以到 Windows 搜尋：</p>
+    <pre><code>認證管理員</code></pre>
+
+    <p>或英文系統搜尋：</p>
+    <pre><code>Credential Manager</code></pre>
+
+    <p>進入 <strong>Windows 認證</strong>，找是否有類似：</p>
+    <pre><code>git:https://github.com
+github.com
+GitHub</code></pre>
+
+    <p>如果有，代表 Windows 目前保存了 GitHub 相關憑證。但憑證也可能是舊帳號、過期 token 或錯誤授權；如果一直認證失敗，可以刪掉相關 GitHub 憑證後重新 <code>git push</code> 觸發登入。</p>
+
+    <h4>如果使用 SSH，檢查 SSH 認證</h4>
+    <p>如果 <code>git remote -v</code> 顯示的是 <code>git@github.com:...</code>，可以執行：</p>
+    <pre><code>ssh -T git@github.com</code></pre>
+
+    <p>成功時會看到類似：</p>
+    <pre><code>Hi 你的帳號! You've successfully authenticated, but GitHub does not provide shell access.</code></pre>
+
+    <p>這代表 SSH key 認證成功。</p>
+
+    <h4>推薦的新手檢查順序</h4>
+    <pre><code>git remote -v
+git config --global credential.helper
+git fetch</code></pre>
+
+    <p>如果有另外安裝 GitHub CLI，再加：</p>
+    <pre><code>gh auth status</code></pre>
+
+    <h4>如何判斷是不是認證問題？</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>錯誤訊息關鍵字</th>
+          <th>比較可能的原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Authentication failed</code></td>
+          <td>GitHub 認證失敗，可能沒登入、token 錯誤或憑證過期。</td>
+        </tr>
+        <tr>
+          <td><code>Invalid username or password</code></td>
+          <td>帳號或 token 錯誤。不要輸入 GitHub 帳號密碼，應改用瀏覽器授權、GitHub CLI 或 Personal Access Token。</td>
+        </tr>
+        <tr>
+          <td><code>Permission denied</code> / <code>403</code></td>
+          <td>已連到 GitHub，但沒有該 repo 的權限，或認證帳號不是 repo 擁有者。</td>
+        </tr>
+        <tr>
+          <td><code>Repository not found</code></td>
+          <td>repo URL 寫錯、repo 不存在，或 Private repo 沒權限。</td>
+        </tr>
+        <tr>
+          <td><code>failed to push some refs</code></td>
+          <td>這句本身只是總結，可能是遠端已有 commit、本機 branch 不一致，也可能是其他 push 被拒絕原因；要看它上面幾行真正錯誤。</td>
+        </tr>
+        <tr>
+          <td><code>remote contains work that you do not have locally</code></td>
+          <td>遠端 GitHub repo 已經有 README、.gitignore 或其他 commit，本機沒有先同步；這不是認證問題。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>7.9 本篇推薦的新手完整指令</h3>
     <p>如果是本機從零開始建立網站 repo，建議直接用這組：</p>
 
     <pre><code>mkdir my-first-site
@@ -644,7 +1106,7 @@ git branch -M main</code></pre>
 
 
   <section id="settings">
-    <h2>8. GitHub Pages 設定說明：為什麼這樣設？</h2>
+    <h2>9. GitHub Pages 設定說明：為什麼這樣設？</h2>
 
     <table>
       <thead>
@@ -722,7 +1184,7 @@ Folder: /docs</code></pre>
   </section>
 
   <section id="update">
-    <h2>9. 網站更新流程</h2>
+    <h2>10. 網站更新流程</h2>
 
     <p>網站不是只發布一次。之後你修改 HTML、CSS 或 JS 後，要重新 commit 並 push。</p>
 
@@ -780,7 +1242,7 @@ git push</code></pre>
   </section>
 
   <section id="public-private">
-    <h2>10. Public / Private 與網站可見性</h2>
+    <h2>11. Public / Private 與網站可見性</h2>
 
     <p>GitHub Pages 發布出來的網站，本質上是拿來被瀏覽器公開讀取的。因此學生應該養成一個觀念：只要是發布成網站的內容，就要假設別人可能看得到。</p>
 
@@ -819,7 +1281,7 @@ git push</code></pre>
   </section>
 
   <section id="common">
-    <h2>11. 常見問題與排除</h2>
+    <h2>12. 常見問題與排除</h2>
 
     <h3>10.1 網站打開是 404</h3>
     <p>常見原因：</p>
@@ -867,7 +1329,7 @@ git push</code></pre>
   </section>
 
   <section id="practice">
-    <h2>12. 練習題：做一個自己的第一個靜態網站</h2>
+    <h2>13. 練習題：做一個自己的第一個靜態網站</h2>
 
     <h3>練習 A：個人介紹頁</h3>
     <ol>
@@ -909,15 +1371,19 @@ git commit -m "Add basic site styles"</code></pre>
   </section>
 
   <section id="summary">
-    <h2>13. 本篇重點整理</h2>
+    <h2>14. 本篇重點整理</h2>
     <ul>
+      <li>Git 是版本控制工具；GitHub 與 Gitea 是 Git 遠端代管平台。</li>
       <li>GitHub Pages 是靜態網站發布功能。</li>
       <li>它需要你指定發布來源：branch + folder。</li>
       <li>新手最推薦：<code>main</code> branch + <code>/root</code> folder。</li>
       <li><code>index.html</code> 是首頁，建議放 repo 最外層。</li>
       <li>修改網站後要 <code>git add</code>、<code>git commit</code>、<code>git push</code>。</li>
-      <li>第一次 push 可能會要求 GitHub 認證；Windows 新手建議用 Git Credential Manager 或 GitHub CLI。</li>
+      <li>第一次 push 可能會要求 GitHub 認證；Windows 新手建議先用 Git for Windows 內建/搭配的 Git Credential Manager。GitHub CLI 是可選的額外工具。</li>
+      <li>可以用 <code>git remote -v</code>、<code>git fetch</code> 檢查 Git 連線；若有另裝 GitHub CLI，才可用 <code>gh auth status</code>。</li>
       <li>本機從零開始建立 repo 時，建議第一次就明確使用 <code>main</code> branch。</li>
+      <li><code>git branch -M main</code> 的作用是把本機目前 branch 改名成 <code>main</code>，通常用來處理本機是 <code>master</code>、遠端是 <code>main</code> 的不一致。</li>
+      <li><code>main</code> 不是 Git 的硬性規定，但若 GitHub Pages 設定讀取 <code>main</code>，本機就應統一推到 <code>main</code>。</li>
       <li>網站上線後，公開內容不要放密碼、token、個資或未授權素材。</li>
     </ul>
   </section>
@@ -929,6 +1395,9 @@ git commit -m "Add basic site styles"</code></pre>
       <li>GitHub Docs：Quickstart for GitHub Pages：<a href="https://docs.github.com/pages/quickstart" target="_blank" rel="noopener">https://docs.github.com/pages/quickstart</a></li>
       <li>GitHub Docs：Configuring a publishing source for your GitHub Pages site：<a href="https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site" target="_blank" rel="noopener">https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site</a></li>
       <li>GitHub Docs：Creating a GitHub Pages site：<a href="https://docs.github.com/articles/creating-project-pages-manually" target="_blank" rel="noopener">https://docs.github.com/articles/creating-project-pages-manually</a></li>
+      <li>Git 官方網站：<a href="https://git-scm.com/" target="_blank" rel="noopener">https://git-scm.com/</a></li>
+      <li>GitHub Docs：About GitHub and Git：<a href="https://docs.github.com/en/get-started/start-your-journey/about-github-and-git" target="_blank" rel="noopener">https://docs.github.com/en/get-started/start-your-journey/about-github-and-git</a></li>
+      <li>Gitea Official Website：<a href="https://about.gitea.com/" target="_blank" rel="noopener">https://about.gitea.com/</a></li>
     </ul>
     <p>文件版本：2026-06-19。適用對象：資工系新生、第一次接觸 GitHub Pages 與靜態網站部署的學生。</p>
   </section>
