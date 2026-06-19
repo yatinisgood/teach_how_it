@@ -162,6 +162,24 @@
       <pre><code>git --version</code></pre>
       <p>如果沒有 Git，請先安裝 Git，再安裝 GitHub CLI。因為 GitHub CLI 很多流程會搭配本機 Git repository 使用。</p>
 
+      <h3>GitHub Desktop 會順便安裝 GitHub CLI 嗎？</h3>
+      <p><strong>通常不會。</strong>GitHub Desktop 是圖形介面工具；GitHub CLI 是另一個命令列工具，指令叫 <code>gh</code>。安裝 GitHub Desktop 後，不代表你的 PowerShell、CMD 或 Terminal 裡一定可以使用 <code>gh</code>。</p>
+      <p>建議把三個工具分開理解：</p>
+      <table>
+        <thead><tr><th>工具</th><th>安裝後常見指令 / 入口</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>Git</td><td><code>git</code></td><td>版本控制本體，例如 commit、branch、merge、push、pull。</td></tr>
+          <tr><td>GitHub Desktop</td><td>桌面圖形介面</td><td>用 GUI 操作 Git / GitHub，適合不想一直下指令的人。</td></tr>
+          <tr><td>GitHub CLI</td><td><code>gh</code></td><td>用命令列操作 GitHub，例如 repo、issue、PR、Actions、release。</td></tr>
+        </tbody>
+      </table>
+      <p>安裝 GitHub Desktop 後，可以用下面指令檢查是否真的有 GitHub CLI：</p>
+      <pre><code>gh --version</code></pre>
+      <p>如果出現 <code>'gh' is not recognized</code>、<code>command not found: gh</code> 或類似訊息，就代表尚未安裝 GitHub CLI，或尚未加入 PATH。這時請依照本章節的 Windows / macOS / Linux 方式另外安裝。</p>
+      <div class="warn">
+        <strong>容易混淆：</strong>GitHub Desktop 可能內建或使用自己的 Git 元件，也可能提供從命令列開啟 Desktop 的輔助功能；但那些不等於 GitHub CLI。GitHub CLI 的判斷標準很簡單：終端機能成功執行 <code>gh --version</code>。
+      </div>
+
       <h3>Windows：使用 WinGet</h3>
       <p>在 PowerShell 或 Windows Terminal 執行：</p>
       <pre><code>winget install --id GitHub.cli --source winget</code></pre>
@@ -326,14 +344,23 @@ gh auth login</code></pre>
         GitHub 現在新 repo 常見預設分支是 <code>main</code>。但 Git 本身不強制一定要叫 <code>main</code>；你的 repo 可以使用 <code>master</code>、<code>dev</code> 或其他名稱。重點是本機分支、遠端分支與預設分支要對得起來。
       </div>
 
-      <h3>問題 4：我要用 Gitea，可以用 GitHub CLI 嗎？</h3>
+
+      <h3>問題 4：安裝 GitHub Desktop 後，為什麼沒有 <code>gh</code>？</h3>
+      <p>因為 GitHub Desktop 和 GitHub CLI 是不同工具。GitHub Desktop 是圖形介面；GitHub CLI 才是提供 <code>gh</code> 指令的命令列工具。</p>
+      <p>請先檢查：</p>
+      <pre><code>gh --version</code></pre>
+      <p>如果系統找不到 <code>gh</code>，Windows 可用：</p>
+      <pre><code>winget install --id GitHub.cli --source winget</code></pre>
+      <p>安裝完成後，請重新開啟 PowerShell / Windows Terminal，再測一次 <code>gh --version</code>。</p>
+
+      <h3>問題 5：我要用 Gitea，可以用 GitHub CLI 嗎？</h3>
       <p>通常不適合。GitHub CLI 是針對 GitHub.com / GitHub Enterprise 的工具；Gitea 雖然也是 Git server 與協作平台，但它不是 GitHub。對 Gitea repo 進行版本控制時，主要仍使用 <code>git clone</code>、<code>git remote</code>、<code>git push</code>、<code>git pull</code>。</p>
       <pre><code>git clone https://你的-gitea-server/user/repo.git
 cd repo
 git status
 git push</code></pre>
 
-      <h3>問題 5：我要先學 Git 還是 GitHub CLI？</h3>
+      <h3>問題 6：我要先學 Git 還是 GitHub CLI？</h3>
       <p>建議順序：</p>
       <ol>
         <li>先學 Git 基本：<code>status</code>、<code>add</code>、<code>commit</code>、<code>branch</code>、<code>merge</code>、<code>push</code>、<code>pull</code>。</li>
